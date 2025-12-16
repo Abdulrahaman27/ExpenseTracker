@@ -234,6 +234,39 @@ namespace ExpenseTracker.Services
             return System.Text.Encoding.UTF8.GetBytes(csv);
         }
 
+        public async Task<(List<Transaction> Transactions, int TotalCount)> GetTransactionsPaginatedAsync(
+            DateTime? startDate = null,
+            DateTime? endDate = null,
+            int? categoryId = null,
+            string search = null, 
+            int pageNumber = 1,
+            int pageSize = 10
+            )
+        {
+            var query = _context.Transactions
+                .Include(t => t.Category)
+                .AsQueryable();
+
+            //Applying filters
+            if (startDate.HasValue)
+                query = query.Where(t => t.Date >= startDate.Value);
+            if (endDate.HasValue)
+                query = query.Where(t => t.Date >= endDate.Value);
+            if (categoryId.HasValue)
+                query = query.Where(t => t.CategoryId == categoryId.Value);
+            if (!string.IsNullOrEmpty(search))
+                query = query.Where(t => t.Description.Contains(search) || t.Notes.Contains(search));
+            var totalCount = await query.CountAsync();
+
+            var transactions = await query
+                .OrderByDescending(t=> t.Date)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (transactions, totalCount);
+        }
+
         //CRUD operations
         public async Task<Transaction> GetTransactionAsync(int id)
         {
