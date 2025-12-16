@@ -81,55 +81,64 @@ namespace ExpenseTracker.Services
         public async Task<DashboardStats> GetDashboardStatsAsync(DateTime? startDate = null, DateTime? endDate = null)
         {
             var transactions = await GetTransactionsAsync(startDate, endDate);
+
             var stats = new DashboardStats
             {
                 TotalIncome = transactions.Where(t => t.Type == TransactionType.Income).Sum(t => t.Amount),
                 TotalExpenses = transactions.Where(t => t.Type == TransactionType.Expense).Sum(t => t.Amount),
                 CategorySpendings = transactions
-                .Where(t => t.Type == TransactionType.Expense)
-                .GroupBy(t => t.Category)
-                .Select(g => new CategorySpending {
-                    CategoryName = g.Key.Name,
-                    CategoryColor = g.Key.Color,
-                    Amount = g.Sum(t => t.Amount),
-                    Percentage = 0 })
-                .OrderByDescending(c => c.Amount)
-                .ToList()
+                    .Where(t => t.Type == TransactionType.Expense)
+                    .GroupBy(t => t.Category)
+                    .Select(g => new CategorySpending
+                    {
+                        CategoryName = g.Key?.Name ?? "Uncategorized",
+                        CategoryColor = g.Key?.Color ?? "#6c757d",
+                        Amount = g.Sum(t => t.Amount),
+                        Percentage = 0
+                    })
+                    .OrderByDescending(c => c.Amount)
+                    .ToList()
             };
 
-            //Calculating percentages
+            // Calculate percentages
             var totalExpenses = stats.TotalExpenses;
-            if(totalExpenses > 0)
+            if (totalExpenses > 0)
             {
-                foreach(var category in stats.CategorySpendings)
+                foreach (var category in stats.CategorySpendings)
                 {
                     category.Percentage = (category.Amount / totalExpenses) * 100;
                 }
             }
 
-            //Get monthly trend for last 6 months
+            // Get monthly trend for last 6 months - FIXED VERSION
             var sixMonthsAgo = DateTime.Now.AddMonths(-6);
+
             var monthlyData = await _context.Transactions
                 .Where(t => t.Date >= sixMonthsAgo)
-                .GroupBy(t => new
-                {
+                .GroupBy(t => new {
                     Year = t.Date.Year,
                     Month = t.Date.Month
                 })
-                .Select(g => new MonthlyTrend
+                .Select(g => new
                 {
-                    Month = $"{g.Key.Year}-{g.Key.Month:D2}",
+                    g.Key.Year,
+                    g.Key.Month,
                     Income = g.Where(t => t.Type == TransactionType.Income).Sum(t => t.Amount),
-                    Expenses = g.Where(t => t.Type == TransactionType.Expense).Sum(t => t.Amount),
+                    Expenses = g.Where(t => t.Type == TransactionType.Expense).Sum(t => t.Amount)
                 })
-                .OrderBy(m => m.Month)
+                .OrderBy(m => m.Year).ThenBy(m => m.Month)
                 .ToListAsync();
 
-            stats.MonthlyTrends = monthlyData;
+            // Format on client side
+            stats.MonthlyTrends = monthlyData.Select(g => new MonthlyTrend
+            {
+                Month = $"{g.Year}-{g.Month:D2}",
+                Income = g.Income,
+                Expenses = g.Expenses
+            }).ToList();
 
             return stats;
         }
-
         public async Task<Category> SuggestCategoryAsync(string description)
         {
             if (string.IsNullOrEmpty(description))

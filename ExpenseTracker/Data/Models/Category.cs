@@ -9,7 +9,7 @@ namespace ExpenseTracker.Data.Models
 
         [Required]
         [StringLength(50)]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         [Required]
         public string Icon { get; set; } = "bi-tag";
@@ -21,18 +21,18 @@ namespace ExpenseTracker.Data.Models
         public TransactionType Type { get; set; }
 
         [StringLength(200)]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
-        public ICollection<Transaction> Transactions { get; set; }
+        public ICollection<Transaction>? Transactions { get; set; }
 
         //For smart suggestions - store as JSON in database
         [Column(TypeName = "nvarchar(max)")]
-        public string KeywordsJson { get; set; }
+        public string? KeywordsJson { get; set; }
 
         [NotMapped]
         public List<string> Keywords
         {
-            get => string.IsNullOrEmpty(KeywordsJson) ? new List<string>(): System.Text.Json.JsonSerializer.Deserialize<List<string>>(KeywordsJson);
+            get => string.IsNullOrEmpty(KeywordsJson) ? new List<string>(): System.Text.Json.JsonSerializer.Deserialize<List<string>>(KeywordsJson) ?? new List<string>();
             set => KeywordsJson = System.Text.Json.JsonSerializer.Serialize(value);
         }
     }

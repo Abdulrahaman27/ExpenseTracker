@@ -1,0 +1,150 @@
+﻿/* Custom Styles for ExpenseTracker */
+:root {
+    --primary-green: #28a745;
+    --secondary-red: #dc3545;
+    --neutral-gray: #6c757d;
+    --accent-blue: #007bff;
+    --accent-yellow: #ffc107;
+    --accent-teal: #20c997;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+}
+
+.sidebar {
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 250px;
+    padding-top: 20px;
+    background: linear-gradient(180deg, #2c3e50 0%, #1a252f 100%);
+    box-shadow: 3px 0 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+}
+
+    .sidebar .nav-link {
+        color: #ecf0f1;
+        padding: 12px 20px;
+        margin: 5px 15px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+        .sidebar .nav-link:hover {
+            background-color: rgba(255,255,255,0.1);
+            color: #fff;
+            transform: translateX(5px);
+        }
+
+        .sidebar .nav-link.active {
+            background-color: var(--primary-green);
+            color: white;
+        }
+
+.main-content {
+    margin-left: 250px;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+.stat-card {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+
+.quick-add-widget {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 1000;
+}
+
+.quick-add-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-green), var(--accent-teal));
+    color: white;
+    border: none;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    transition: all 0.3s ease;
+}
+
+    .quick-add-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+    }
+
+.category-badge {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+}
+
+.transaction-row {
+    transition: background-color 0.2s ease;
+}
+
+    .transaction-row:hover {
+        background-color: #f8f9fa;
+    }
+
+.progress {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    transition: width 1s ease-in-out;
+}
+
+.chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 70px;
+    }
+
+        .sidebar .nav-link span {
+            display: none;
+        }
+
+    .main-content {
+        margin-left: 70px;
+    }
+
+    .stat-card {
+        margin-bottom: 15px;
+    }
+}
+
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #1a1a1a;
+        color: #f8f9fa;
+    }
+
+    .card {
+        background-color: #2d3748;
+        color: #f8f9fa;
+    }
+
+    .table {
+        color: #f8f9fa;
+    }
+}

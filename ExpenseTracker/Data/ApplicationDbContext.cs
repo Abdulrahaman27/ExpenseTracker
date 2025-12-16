@@ -1,13 +1,16 @@
 ﻿using ExpenseTracker.Data.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic; // Added this
-using System.Text.Json; // Added for JsonSerializer
+using System.Collections.Generic;
+using System.Text.Json;
 
 namespace ExpenseTracker.Data
 {
     public class ApplicationDbContext : DbContext
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+            : base(options)
+        {
+        }
 
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<Category> Categories { get; set; }
@@ -31,8 +34,22 @@ namespace ExpenseTracker.Data
                 .HasForeignKey(b => b.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // FIX: Configure decimal precision for SQL Server
+            // For Transaction Amount
+            modelBuilder.Entity<Transaction>()
+                .Property(t => t.Amount)
+                .HasPrecision(18, 2); // 18 total digits, 2 decimal places
+
+            // For Budget Amount and CurrentSpending
+            modelBuilder.Entity<Budget>()
+                .Property(b => b.Amount)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Budget>()
+                .Property(b => b.CurrentSpending)
+                .HasPrecision(18, 2);
+
             // Seed initial data with JSON serialization
-            // Note: Make sure your Category model has KeywordsJson property
             var foodKeywords = JsonSerializer.Serialize(new List<string>
             { "restaurant", "food", "dinner", "lunch", "coffee", "grocery" });
 
@@ -59,6 +76,7 @@ namespace ExpenseTracker.Data
                     Icon = "bi-cup-straw",
                     Color = "#dc3545",
                     Type = TransactionType.Expense,
+                    Description = "Restaurants, groceries, coffee shops",
                     KeywordsJson = foodKeywords
                 },
                 new Category
@@ -68,6 +86,7 @@ namespace ExpenseTracker.Data
                     Icon = "bi-car-front",
                     Color = "#007bff",
                     Type = TransactionType.Expense,
+                    Description = "Gas, public transport, ride sharing",
                     KeywordsJson = transportKeywords
                 },
                 new Category
@@ -77,6 +96,7 @@ namespace ExpenseTracker.Data
                     Icon = "bi-bag",
                     Color = "#ffc107",
                     Type = TransactionType.Expense,
+                    Description = "Clothing, electronics, household items",
                     KeywordsJson = shoppingKeywords
                 },
                 new Category
@@ -86,6 +106,7 @@ namespace ExpenseTracker.Data
                     Icon = "bi-film",
                     Color = "#20c997",
                     Type = TransactionType.Expense,
+                    Description = "Movies, streaming services, concerts",
                     KeywordsJson = entertainmentKeywords
                 },
                 new Category
@@ -95,6 +116,7 @@ namespace ExpenseTracker.Data
                     Icon = "bi-cash-stack",
                     Color = "#28a745",
                     Type = TransactionType.Income,
+                    Description = "Regular employment income",
                     KeywordsJson = salaryKeywords
                 },
                 new Category
@@ -104,6 +126,7 @@ namespace ExpenseTracker.Data
                     Icon = "bi-laptop",
                     Color = "#28a745",
                     Type = TransactionType.Income,
+                    Description = "Freelance work and contract income",
                     KeywordsJson = freelanceKeywords
                 }
             );

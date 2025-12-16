@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace ExpenseTracker.Data.Models
 {
     public class Transaction
@@ -8,11 +10,12 @@ namespace ExpenseTracker.Data.Models
 
         [Required]
         [StringLength(100)]
-        public string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
 
         [Required]
         [DataType(DataType.Currency)]
         [Range(0.01, double.MaxValue, ErrorMessage = "Amount must be greater than 0")]
+        [Column(TypeName = "decimal(18,2)")] // Add this
         public decimal Amount { get; set; }
 
         [Required]
@@ -23,14 +26,14 @@ namespace ExpenseTracker.Data.Models
 
         [Required]
         public int CategoryId { get; set; }
-        public Category Category { get; set; }
+        public Category? Category { get; set; }
 
         public bool IsRecurring { get; set; }
         public RecurringType? RecurringType { get; set; }
         public DateTime? RecurringEndDate { get; set; }
 
         [StringLength(500)]
-        public string Notes { get; set; }
+        public string? Notes { get; set; }
     }
 
     public enum TransactionType
