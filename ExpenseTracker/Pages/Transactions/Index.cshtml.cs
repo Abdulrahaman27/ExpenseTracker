@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -18,10 +19,14 @@ namespace ExpenseTracker.Pages.Transactions
 
         //Filter properties
         [BindProperty(SupportsGet = true)]
-        public DateTime? StartDate { get; set; } = DateTime.Now.AddMonths(-1);
+        [DataType(DataType.Date)]
+        public DateTime? StartDate { get; set; }
+
 
         [BindProperty(SupportsGet = true)]
-        public DateTime? EndDate { get; set; } = DateTime.Now;
+        [DataType(DataType.Date)]
+        public DateTime? EndDate { get; set; }
+
 
         [BindProperty(SupportsGet = true)]
         public int? CategoryId { get; set; }
@@ -30,7 +35,7 @@ namespace ExpenseTracker.Pages.Transactions
         public string? Search {  get; set; }
 
         [BindProperty(SupportsGet = true)]
-        public string? Type { get; set; }
+        public Data.Models.TransactionType? Type { get; set; }
 
         //Pagination
         [BindProperty(SupportsGet = true)]
@@ -52,19 +57,34 @@ namespace ExpenseTracker.Pages.Transactions
             _categoryService = categoryService;
         }
 
+
         public async Task OnGetAsync()
         {
+            if (!StartDate.HasValue)
+            {
+                StartDate = DateTime.Now.AddMonths(-1).Date;
+            }
+
+            if (!EndDate.HasValue)
+            {
+                EndDate = DateTime.Now.Date;
+            }
             //Load categories from dropdown
             Categories = await _categoryService.GetCategoriesAsync();
 
             //Get filtered Transactions
             var allTransactions = await _transactionService.GetTransactionsAsync(
-                StartDate, EndDate, CategoryId, Search);
+                StartDate,
+                EndDate?.Date.AddDays(1).AddSeconds(-1),
+                CategoryId,
+                Search);
+
+
 
             //filter by type if specified
-            if (!string.IsNullOrEmpty(Type) && Enum.TryParse<Data.Models.TransactionType>(Type, out var transactionType))
+            if (Type.HasValue)
             {
-                allTransactions = allTransactions.Where(t => t.Type == transactionType).ToList(); ;
+                allTransactions = allTransactions.Where(t => t.Type == Type.Value).ToList(); ;
             }
 
             //Calculate summary statistics
@@ -74,6 +94,10 @@ namespace ExpenseTracker.Pages.Transactions
             //Apply pagination
             TotalCount = allTransactions.Count;
             TotalPages = (int)Math.Ceiling(TotalCount / (double)PageSize);
+
+            // Handle invalid page number
+            if(CurrentPage < 1) CurrentPage = 1;
+            if(CurrentPage > TotalPages && TotalPages > 0) CurrentPage = TotalPages;
 
             Transactions = allTransactions
                 .Skip((CurrentPage - 1) * PageSize)
@@ -86,11 +110,11 @@ namespace ExpenseTracker.Pages.Transactions
             await _transactionService.DeleteTransactionAsync(id);
             return RedirectToPage(new
             {
-                StartDate,
-                EndDate,
+                StartDate = StartDate?.ToString("yyyy-MM-dd"),
+                EndDate = EndDate?.ToString("yyyy-MM-dd"),
                 CategoryId,
                 Search,
-                Type,
+                Type = Type?.ToString(),
                 CurrentPage
             });
         }

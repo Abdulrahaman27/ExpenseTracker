@@ -1,4 +1,260 @@
-﻿@page
+﻿@page "{id:int}"
 @model ExpenseTracker.Pages.Transactions.EditModel
+
 @{
+    ViewData["Title"] = "Edit Transaction";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-pencil-square me-2"></i>@ViewData["Title"]
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(TempData["SuccessMessage"] as string))
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <form method="post">
+                        <input type="hidden" asp-for="Transaction.Id" />
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                        <!-- Basic Information -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Transaction.Description" class="form-label required"></label>
+                                <input asp-for="Transaction.Description" class="form-control" />
+                                <span asp-validation-for="Transaction.Description" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Transaction.Amount" class="form-label required"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input asp-for="Transaction.Amount" class="form-control"
+                                           type="number" step="0.01" min="0.01" />
+                                </div>
+                                <span asp-validation-for="Transaction.Amount" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Date and Type -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Transaction.Date" class="form-label required"></label>
+                                <input asp-for="Transaction.Date" class="form-control"
+                                       type="datetime-local"
+                                       value="@(Model.Transaction?.Date.ToString("yyyy-MM-ddTHH:mm") ?? DateTime.Now.ToString("yyyy-MM-ddTHH:mm"))" />
+                                <span asp-validation-for="Transaction.Date" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Transaction.Type" class="form-label required"></label>
+                                <select asp-for="Transaction.Type" class="form-select" id="typeSelect">
+                                    <option value="0">Expense</option>
+                                    <option value="1">Income</option>
+                                </select>
+                                <span asp-validation-for="Transaction.Type" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Category Selection -->
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label asp-for="Transaction.CategoryId" class="form-label required"></label>
+                                <select asp-for="Transaction.CategoryId" class="form-select" id="categorySelect">
+                                    <option value="">-- Select Category --</option>
+                                    @if (Model.Categories != null)
+                                    {
+                                        @foreach (var category in Model.Categories)
+                                        {
+                                            <option value="@category.Id"
+                                                    data-type="@category.Type"
+                                                    data-color="@category.Color"
+                                                    selected="@(Model.Transaction != null && category.Id == Model.Transaction.CategoryId)">
+                                                @category.Name
+                                            </option>
+                                        }
+                                    }
+                                </select>
+                                <span asp-validation-for="Transaction.CategoryId" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Current Category Preview -->
+                        @if (Model.Transaction?.Category != null)
+                        {
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <strong>Current Category:</strong>
+                                <span class="badge ms-2" style="background-color: @Model.Transaction.Category.Color">
+                                    <i class="bi @Model.Transaction.Category.Icon"></i>
+                                    @Model.Transaction.Category.Name
+                                </span>
+                            </div>
+                        }
+
+                        <!-- Recurring Transaction Options -->
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <input class="form-check-input me-2" type="checkbox"
+                                           asp-for="Transaction.IsRecurring" id="isRecurring" />
+                                    <label class="form-check-label" for="isRecurring">
+                                        <i class="bi bi-arrow-repeat me-1"></i>Recurring Transaction
+                                    </label>
+                                </h6>
+                            </div>
+                            <div class="card-body" id="recurringOptions"
+                                 style="display: @(Model.Transaction?.IsRecurring == true ? "block" : "none");">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label asp-for="Transaction.RecurringType" class="form-label"></label>
+                                        <select asp-for="Transaction.RecurringType" class="form-select">
+                                            <option value="">-- Select Frequency --</option>
+                                            <option value="0">Daily</option>
+                                            <option value="1">Weekly</option>
+                                            <option value="2">Monthly</option>
+                                            <option value="3">Yearly</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label asp-for="Transaction.RecurringEndDate" class="form-label"></label>
+                                        <input asp-for="Transaction.RecurringEndDate" class="form-control"
+                                               type="date" />
+                                        <small class="text-muted">Leave empty for indefinite recurrence</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Additional Notes -->
+                        <div class="mb-3">
+                            <label asp-for="Transaction.Notes" class="form-label"></label>
+                            <textarea asp-for="Transaction.Notes" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Transaction.Notes" class="text-danger"></span>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="bi bi-save me-2"></i>Update Transaction
+                                </button>
+                                <a asp-page="Index" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-circle me-2"></i>Cancel
+                                </a>
+                            </div>
+                            <div>
+                                <button type="submit" asp-page-handler="Delete"
+                                        onclick="return confirm('Are you sure you want to delete this transaction?')"
+                                        class="btn btn-danger">
+                                    <i class="bi bi-trash me-2"></i>Delete
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Audit Information -->
+            @if (Model.Transaction != null)
+            {
+                <div class="card shadow mt-3">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0"><i class="bi bi-clock me-2"></i>Transaction Details</h6>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4">Transaction ID</dt>
+                            <dd class="col-sm-8">@Model.Transaction.Id</dd>
+
+                            <dt class="col-sm-4">Created</dt>
+                            <dd class="col-sm-8">
+                                @if (Model.Transaction.CreatedDate != default)
+                                {
+                                    @Model.Transaction.CreatedDate.ToString("MMM dd, yyyy HH:mm")
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Not recorded</span>
+                                }
+                            </dd>
+
+                            <dt class="col-sm-4">Last Updated</dt>
+                            <dd class="col-sm-8">
+                                @if (Model.Transaction.ModifiedDate != default)
+                                {
+                                    @Model.Transaction.ModifiedDate.ToString("MMM dd, yyyy HH:mm")
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Not recorded</span>
+                                }
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const typeSelect = document.getElementById('typeSelect');
+            const categorySelect = document.getElementById('categorySelect');
+            const isRecurringCheckbox = document.getElementById('isRecurring');
+            const recurringOptions = document.getElementById('recurringOptions');
+
+            // Update categories based on selected type
+            function updateCategories() {
+                const transactionType = parseInt(typeSelect.value);
+                const options = categorySelect.querySelectorAll('option');
+
+                // Show all options first
+                options.forEach(option => {
+                    option.style.display = '';
+                });
+
+                // Hide options that don't match the selected type
+                if (transactionType === 0 || transactionType === 1) {
+                    options.forEach(option => {
+                        if (option.value && option.dataset.type !== transactionType.toString()) {
+                            option.style.display = 'none';
+                        }
+                    });
+                }
+            }
+
+            // Toggle recurring options
+            if (isRecurringCheckbox) {
+                isRecurringCheckbox.addEventListener('change', function() {
+                    recurringOptions.style.display = this.checked ? 'block' : 'none';
+                });
+            }
+
+            // Initialize
+            updateCategories();
+            typeSelect.addEventListener('change', updateCategories);
+
+            // Set initial transaction type
+        @if (Model.Transaction != null)
+        {
+            <text>
+                    typeSelect.value = '@((int)Model.Transaction.Type)';
+                    updateCategories();
+            </text>
+        }
+        });
+    </script>
 }

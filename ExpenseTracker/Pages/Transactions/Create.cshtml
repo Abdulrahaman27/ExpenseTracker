@@ -1,4 +1,209 @@
 ﻿@page
 @model ExpenseTracker.Pages.Transactions.CreateModel
+
 @{
+    ViewData["Title"] = "Add New Transaction";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+
+            <!-- Main Card -->
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-plus-circle me-2"></i>@ViewData["Title"]
+                    </h4>
+                </div>
+
+                <div class="card-body">
+                    <form method="post" id="createForm">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <!-- Description & Amount -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Transaction.Description" class="form-label required"></label>
+                                <input asp-for="Transaction.Description" class="form-control"
+                                       placeholder="e.g. Grocery, Salary" />
+                                <span asp-validation-for="Transaction.Description" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Transaction.Amount" class="form-label required"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input asp-for="Transaction.Amount" type="number" step="0.01" min="0.01"
+                                           class="form-control" />
+                                </div>
+                                <span asp-validation-for="Transaction.Amount" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Date & Type -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Transaction.Date" class="form-label required"></label>
+                                <input asp-for="Transaction.Date" type="datetime-local" class="form-control" />
+                                <span asp-validation-for="Transaction.Date" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Transaction.Type" class="form-label required"></label>
+                                <select asp-for="Transaction.Type" class="form-select" id="typeSelect">
+                                    <option value="0">Expense</option>
+                                    <option value="1">Income</option>
+                                </select>
+                                <span asp-validation-for="Transaction.Type" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Category -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Transaction.CategoryId" class="form-label required"></label>
+                                <select asp-for="Transaction.CategoryId" class="form-select" id="categorySelect">
+                                    <option value="">-- Select Category --</option>
+
+                                    @foreach (var category in Model.Categories)
+                                    {
+                                        <option value="@category.Id"
+                                                data-type="@((int)category.Type)">
+                                            @category.Name
+                                        </option>
+                                    }
+                                </select>
+                                <span asp-validation-for="Transaction.CategoryId" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Category Preview</label>
+                                <div id="categoryPreview" class="border rounded p-2 text-center">
+                                    <span class="text-muted">Select a category</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recurring -->
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <input asp-for="Transaction.IsRecurring"
+                                       class="form-check-input me-2" id="isRecurring" />
+                                <label for="isRecurring" class="form-check-label">
+                                    <i class="bi bi-arrow-repeat me-1"></i>Recurring Transaction
+                                </label>
+                            </div>
+
+                            <div class="card-body d-none" id="recurringOptions">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label asp-for="Transaction.RecurringType" class="form-label"></label>
+                                        <select asp-for="Transaction.RecurringType" class="form-select">
+                                            <option value="">-- Select Frequency --</option>
+                                            <option value="0">Daily</option>
+                                            <option value="1">Weekly</option>
+                                            <option value="2">Monthly</option>
+                                            <option value="3">Yearly</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label asp-for="Transaction.RecurringEndDate" class="form-label"></label>
+                                        <input asp-for="Transaction.RecurringEndDate" type="date"
+                                               class="form-control" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="mb-3">
+                            <label asp-for="Transaction.Notes" class="form-label"></label>
+                            <textarea asp-for="Transaction.Notes" class="form-control" rows="3"></textarea>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <button type="submit" name="Action" value="create"
+                                        class="btn btn-success">
+                                    Create
+                                </button>
+
+                                <button type="submit" name="Action" value="createAndAddAnother"
+                                        class="btn btn-outline-success">
+                                    Create & Add Another
+                                </button>
+                            </div>
+
+                            <a asp-page="Index" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const typeSelect = document.getElementById('typeSelect');
+            const categorySelect = document.getElementById('categorySelect');
+            const preview = document.getElementById('categoryPreview');
+            const recurring = document.getElementById('isRecurring');
+            const recurringBox = document.getElementById('recurringOptions');
+
+            function updatePreview() {
+                const opt = categorySelect.selectedOptions[0];
+                if (!opt || !opt.value) {
+                    preview.innerHTML = '<span class="text-muted">Select a category</span>';
+                    return;
+                }
+
+                preview.innerHTML = `
+                    <span class="badge bg-primary p-2">
+                        <i class="bi bi-tag me-1"></i>${opt.text}
+                    </span>
+                `;
+            }
+
+            function filterCategories() {
+                const type = typeSelect.value;
+                [...categorySelect.options].forEach(o => {
+                    if (!o.dataset.type) return;
+                    o.hidden = o.dataset.type !== type;
+                });
+                updatePreview();
+            }
+
+            categorySelect.addEventListener('change', () => {
+                typeSelect.value = categorySelect.selectedOptions[0]?.dataset.type ?? typeSelect.value;
+                updatePreview();
+            });
+
+            typeSelect.addEventListener('change', filterCategories);
+
+            recurring.addEventListener('change', () => {
+                recurringBox.classList.toggle('d-none', !recurring.checked);
+            });
+
+            filterCategories();
+        });
+    </script>
+
+    <style>
+        .required::after {
+            content: " *";
+            color: #dc3545;
+        }
+
+        .input-validation-error {
+            border-color: #dc3545;
+        }
+    </style>
 }

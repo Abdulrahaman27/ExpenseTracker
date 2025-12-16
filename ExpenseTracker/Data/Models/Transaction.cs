@@ -15,7 +15,7 @@ namespace ExpenseTracker.Data.Models
         [Required]
         [DataType(DataType.Currency)]
         [Range(0.01, double.MaxValue, ErrorMessage = "Amount must be greater than 0")]
-        [Column(TypeName = "decimal(18,2)")] // Add this
+        [Column(TypeName = "decimal(18,2)")]
         public decimal Amount { get; set; }
 
         [Required]
@@ -34,6 +34,14 @@ namespace ExpenseTracker.Data.Models
 
         [StringLength(500)]
         public string? Notes { get; set; }
+
+        // Add these audit properties
+        public DateTime CreatedDate { get; set; } = DateTime.Now;
+        public DateTime ModifiedDate { get; set; } = DateTime.Now;
+
+        // Optional: Add these if you want soft delete
+        public bool IsDeleted { get; set; } = false;
+        public DateTime? DeletedDate { get; set; }
     }
 
     public enum TransactionType

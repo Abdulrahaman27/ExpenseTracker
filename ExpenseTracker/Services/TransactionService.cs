@@ -11,7 +11,7 @@ namespace ExpenseTracker.Services
     {
         Task<List<Transaction>> GetTransactionsAsync(DateTime? startDate = null, DateTime? endDate = null,
             int? categoryId = null,
-            string search = null);
+            string? search = null);
         Task<Transaction> GetTransactionAsync(int id);
         Task CreateTransactionAsync(Transaction transaction);
         Task UpdateTransactionAsync(Transaction transaction);
@@ -283,6 +283,7 @@ namespace ExpenseTracker.Services
 
         public async Task UpdateTransactionAsync(Transaction transaction)
         {
+            transaction.ModifiedDate = DateTime.Now;
             _context.Transactions.Update(transaction);
             await _context.SaveChangesAsync();
         }
