@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 namespace ExpenseTracker.Data.Models
 {
     public class Category
@@ -24,7 +25,15 @@ namespace ExpenseTracker.Data.Models
 
         public ICollection<Transaction> Transactions { get; set; }
 
-        //For smart suggestions
-        public List<string> Keywords { get; set; } = new List<string>();
+        //For smart suggestions - store as JSON in database
+        [Column(TypeName = "nvarchar(max)")]
+        public string KeywordsJson { get; set; }
+
+        [NotMapped]
+        public List<string> Keywords
+        {
+            get => string.IsNullOrEmpty(KeywordsJson) ? new List<string>(): System.Text.Json.JsonSerializer.Deserialize<List<string>>(KeywordsJson);
+            set => KeywordsJson = System.Text.Json.JsonSerializer.Serialize(value);
+        }
     }
 }
