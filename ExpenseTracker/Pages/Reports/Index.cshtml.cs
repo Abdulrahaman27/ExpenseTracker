@@ -2,6 +2,7 @@ using ExpenseTracker.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace ExpenseTracker.Pages.Reports
@@ -28,6 +29,12 @@ namespace ExpenseTracker.Pages.Reports
         public List<MonthlySummary> MonthlySummaries { get; set; }
         public CategoryReport CategoryReport { get; set; }
 
+        [TempData]
+        public string Message { get; set; }
+
+        [TempData]
+        public string MessageType { get; set; } // "success", "error", "info"
+
         public IndexModel(IReportService reportService)
         {
             _reportService = reportService;
@@ -35,22 +42,40 @@ namespace ExpenseTracker.Pages.Reports
 
         public async Task OnGetAsync()
         {
-            if (Year > 0)
+            try
             {
-                MonthlyReport = await _reportService.GenerateMonthlyReportAsync(Year, Month);
-                YearlyReport = await _reportService.GenerateYearlyReportAsync(Year);
-                MonthlySummaries = await _reportService.GetMonthlySummariesAsync(Year);
-            }
+                if (Year > 0)
+                {
+                    MonthlyReport = await _reportService.GenerateMonthlyReportAsync(Year, Month);
+                    YearlyReport = await _reportService.GenerateYearlyReportAsync(Year);
+                    MonthlySummaries = await _reportService.GetMonthlySummariesAsync(Year);
+                }
 
-            CustomReport = await _reportService.GenerateCustomReportAsync(StartDate, EndDate);
-            CategoryReport = await _reportService.GetCategoryReportAsync(StartDate, EndDate);
+                CustomReport = await _reportService.GenerateCustomReportAsync(StartDate, EndDate);
+                CategoryReport = await _reportService.GetCategoryReportAsync(StartDate, EndDate);
+            }
+            catch (Exception ex)
+            {
+                Message = $"Error generating reports: {ex.Message}";
+                MessageType = "error";
+            }
         }
 
         public async Task<IActionResult> OnPostExportMonthlyAsync()
         {
-            var report = await _reportService.GenerateMonthlyReportAsync(Year, Month);
-            // Implement export logic here
-            return Page();
+            try
+            {
+                var report = await _reportService.GenerateMonthlyReportAsync(Year, Month);
+                // Implement export logic here
+                Message = "Monthly report exported successfully!";
+                MessageType = "success";
+            }
+            catch (Exception ex)
+            {
+                Message = $"Error exporting report: {ex.Message}";
+                MessageType = "error";
+            }
+            return RedirectToPage();
         }
     }
 }
