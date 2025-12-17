@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
-
+using System.Text;
 namespace ExpenseTracker.Pages.Transactions
 {
     public class IndexModel : PageModel
@@ -158,5 +158,92 @@ namespace ExpenseTracker.Pages.Transactions
         {
             return RedirectToPage(new { CurrentPage = 1 });
         }
+
+        public async Task<IActionResult> OnGetExportAsync(string format = "csv")
+        {
+            // Apply the same filters as the current page
+            var filters = new TransactionFilters
+            {
+                StartDate = StartDate,
+                EndDate = EndDate?.Date.AddDays(1).AddSeconds(-1),
+                CategoryId = CategoryId,
+                Type = Type,
+                Search = Search
+            };
+
+            // Get filtered transactions (without pagination)
+            var transactions = await _transactionService.GetTransactionsAsync(
+                filters.StartDate,
+                filters.EndDate,
+                filters.CategoryId,
+                filters.Search);
+
+            // Apply type filter if specified
+            if (Type.HasValue)
+            {
+                transactions = transactions.Where(t => t.Type == Type.Value).ToList();
+            }
+
+            if (format.ToLower() == "csv")
+            {
+                return ExportToCsv(transactions);
+            }
+            // You could add other formats later (excel, pdf, etc.)
+
+            return RedirectToPage("Index");
+        }
+
+        private FileContentResult ExportToCsv(List<Data.Models.Transaction> transactions)
+        {
+            var csv = new StringBuilder();
+
+            // CSV Header
+            csv.AppendLine("Date,Description,Category,Type,Amount,Recurring,Notes");
+
+            // CSV Data
+            foreach (var transaction in transactions)
+            {
+                // Escape quotes and commas in fields
+                var description = EscapeCsvField(transaction.Description);
+                var categoryName = transaction.Category?.Name ?? "Uncategorized";
+                var type = transaction.Type == Data.Models.TransactionType.Income ? "Income" : "Expense";
+                var recurring = transaction.IsRecurring ? "Yes" : "No";
+                var notes = EscapeCsvField(transaction.Notes ?? "");
+
+                csv.AppendLine($"{transaction.Date:yyyy-MM-dd},\"{description}\",\"{categoryName}\",{type},{transaction.Amount:F2},{recurring},\"{notes}\"");
+            }
+
+            var bytes = Encoding.UTF8.GetBytes(csv.ToString());
+
+            // Return CSV file
+            return File(bytes, "text/csv", $"transactions-{DateTime.Now:yyyyMMdd-HHmmss}.csv");
+        }
+
+        private string EscapeCsvField(string field)
+        {
+            if (string.IsNullOrEmpty(field)) return "";
+
+            // Escape quotes by doubling them
+            field = field.Replace("\"", "\"\"");
+
+            // If field contains comma, quote, or newline, wrap in quotes
+            if (field.Contains(",") || field.Contains("\"") || field.Contains("\n") || field.Contains("\r"))
+            {
+                field = $"\"{field}\"";
+            }
+
+            return field;
+        }
+
+        // Helper class for filters (if you don't have it already)
+        public class TransactionFilters
+        {
+            public DateTime? StartDate { get; set; }
+            public DateTime? EndDate { get; set; }
+            public int? CategoryId { get; set; }
+            public Data.Models.TransactionType? Type { get; set; }
+            public string? Search { get; set; }
+        }
+
     }
 }

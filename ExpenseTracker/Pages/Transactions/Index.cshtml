@@ -4,7 +4,48 @@
 @{
     ViewData["Title"] = "Transactions";
 }
+@functions {
+    public string GetExportUrl()
+    {
+        var queryParams = new System.Collections.Generic.Dictionary<string, string?>
+            {
+                ["handler"] = "Export",
+                ["format"] = "csv"
+            };
 
+        // Add current filter parameters
+        if (Model.StartDate.HasValue)
+        {
+            queryParams["startDate"] = Model.StartDate.Value.ToString("yyyy-MM-dd");
+        }
+
+        if (Model.EndDate.HasValue)
+        {
+            queryParams["endDate"] = Model.EndDate.Value.ToString("yyyy-MM-dd");
+        }
+
+        if (Model.CategoryId.HasValue)
+        {
+            queryParams["categoryId"] = Model.CategoryId.Value.ToString();
+        }
+
+        if (!string.IsNullOrEmpty(Model.Search))
+        {
+            queryParams["search"] = Model.Search;
+        }
+
+        if (Model.Type.HasValue)
+        {
+            queryParams["type"] = ((int)Model.Type.Value).ToString();
+        }
+
+        var queryString = string.Join("&", queryParams
+            .Where(x => x.Value != null)
+            .Select(x => $"{x.Key}={System.Net.WebUtility.UrlEncode(x.Value)}"));
+
+        return Url.Page("./Index") + "?" + queryString;
+    }
+}
 <div class="container-fluid">
     <!-- Page Header -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
@@ -347,13 +388,8 @@
                 <!-- Export Options -->
                 <div class="mt-3">
                     <div class="btn-group">
-                        <a href="@Url.Page("Index", new { export = "csv",
-                               startDate = Model.StartDate?.ToString("yyyy-MM-dd"),
-                               endDate = Model.EndDate?.ToString("yyyy-MM-dd"),
-                               categoryId = Model.CategoryId,
-                               search = Model.Search,
-                               type = Model.Type })"
-                           class="btn btn-sm btn-outline-success">
+                        <!-- Export Button -->
+                        <a href="@GetExportUrl()" class="btn btn-success btn-sm" title="Export to CSV">
                             <i class="bi bi-file-earmark-arrow-down"></i> Export to CSV
                         </a>
                         <a href="@Url.Page("Index", new { export = "print",
