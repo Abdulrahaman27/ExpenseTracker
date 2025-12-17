@@ -165,107 +165,141 @@
         </div>
         <div class="card-body">
             @if (Model.Transactions.Any())
-            {
-                <!-- Bulk Actions Toolbar -->
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div>
-                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="selectAllTransactions()">
-                            <i class="bi bi-check-square"></i> Select All
-                        </button>
-                        <button type="button" class="btn btn-outline-danger btn-sm" id="bulkDeleteBtn"
-                                onclick="showBulkDeleteModal()" disabled>
-                            <i class="bi bi-trash"></i> Delete Selected
-                        </button>
-                        <span class="ms-2 text-muted" id="selectedInfo">
-                            <span id="selectedCountDisplay">0</span> selected
-                        </span>
-                    </div>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-hover table-striped">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>Date</th>
-                                <th>Description</th>
-                                <th>Category</th>
-                                <th>Type</th>
-                                <th class="text-end">Amount</th>
-                                <th>Notes</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var transaction in Model.Transactions)
+{
+    <!-- Bulk Actions Toolbar -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <button type="button" class="btn btn-outline-primary btn-sm" onclick="selectAllTransactions()">
+                <i class="bi bi-check-square"></i> Select All
+            </button>
+            <button type="button" class="btn btn-outline-danger btn-sm" id="bulkDeleteBtn"
+                    onclick="showBulkDeleteModal()" disabled>
+                <i class="bi bi-trash"></i> Delete Selected
+            </button>
+            <span class="ms-2 text-muted" id="selectedInfo">
+                <span id="selectedCountDisplay">0</span> selected
+            </span>
+        </div>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table table-hover table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th width="50">
+                        <input type="checkbox" id="selectAllHeader" onclick="toggleAllCheckboxes()">
+                    </th>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Category</th>
+                    <th>Type</th>
+                    <th class="text-end">Amount</th>
+                    <th>Notes</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var transaction in Model.Transactions)
+                {
+                    <tr>
+                        <td>
+                            <input type="checkbox" 
+                                   class="transaction-checkbox" 
+                                   value="@transaction.Id"
+                                   onchange="updateSelection()">
+                        </td>
+                        <td>@transaction.Date.ToString("MMM dd, yyyy")</td>
+                        <td>
+                            @transaction.Description
+                            @if (transaction.IsRecurring)
                             {
-                                <tr>
-                                    <td>@transaction.Date.ToString("MMM dd, yyyy")</td>
-                                    <td>
-                                        @transaction.Description
-                                        @if (transaction.IsRecurring)
-                                        {
-                                            <span class="badge bg-info ms-1" title="Recurring">
-                                                <i class="bi bi-arrow-repeat"></i>
-                                            </span>
-                                        }
-                                    </td>
-                                    <td>
-                                        @if (transaction.Category != null)
-                                        {
-                                            <span class="badge" style="background-color: @transaction.Category.Color">
-                                                <i class="bi @transaction.Category.Icon"></i>
-                                                @transaction.Category.Name
-                                            </span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-secondary">Uncategorized</span>
-                                        }
-                                    </td>
-                                    <td>
-                                        @if (transaction.Type == ExpenseTracker.Data.Models.TransactionType.Income)
-                                        {
-                                            <span class="badge bg-success">Income</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-danger">Expense</span>
-                                        }
-                                    </td>
-                                    <td class="text-end fw-bold @(transaction.Type == ExpenseTracker.Data.Models.TransactionType.Income ? "text-success" : "text-danger")">
-                                        @(transaction.Type == ExpenseTracker.Data.Models.TransactionType.Income ? "+" : "-")@transaction.Amount.ToString("C")
-                                    </td>
-                                    <td>
-                                        @if (!string.IsNullOrEmpty(transaction.Notes))
-                                        {
-                                            <i class="bi bi-chat-left-text" title="@transaction.Notes"></i>
-                                        }
-                                        else
-                                        {
-                                            <span class="text-muted">-</span>
-                                        }
-                                    </td>
-                                    <td>
-                                        <div class="btn-group btn-group-sm" role="group">
-                                            <a asp-page="Edit" asp-route-id="@transaction.Id"
-                                               class="btn btn-outline-primary" title="Edit">
-                                                <i class="bi bi-pencil"></i>
-                                            </a>
-                                            <a asp-page="Details" asp-route-id="@transaction.Id"
-                                               class="btn btn-outline-info" title="Details">
-                                                <i class="bi bi-eye"></i>
-                                            </a>
-                                            <button type="button" class="btn btn-outline-danger" title="Delete"
-                                                    onclick="confirmDelete(@transaction.Id, '@transaction.Description')">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                <span class="badge bg-info ms-1" title="Recurring">
+                                    <i class="bi bi-arrow-repeat"></i>
+                                </span>
                             }
-                        </tbody>
-                    </table>
+                        </td>
+                        <td>
+                            @if (transaction.Category != null)
+                            {
+                                <span class="badge" style="background-color: @transaction.Category.Color">
+                                    <i class="bi @transaction.Category.Icon"></i>
+                                    @transaction.Category.Name
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Uncategorized</span>
+                            }
+                        </td>
+                        <td>
+                            @if (transaction.Type == ExpenseTracker.Data.Models.TransactionType.Income)
+                            {
+                                <span class="badge bg-success">Income</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">Expense</span>
+                            }
+                        </td>
+                        <td class="text-end fw-bold @(transaction.Type == ExpenseTracker.Data.Models.TransactionType.Income ? "text-success" : "text-danger")">
+                            @(transaction.Type == ExpenseTracker.Data.Models.TransactionType.Income ? "+" : "-")@transaction.Amount.ToString("C")
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(transaction.Notes))
+                            {
+                                <i class="bi bi-chat-left-text" title="@transaction.Notes"></i>
+                            }
+                            else
+                            {
+                                <span class="text-muted">-</span>
+                            }
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a asp-page="Edit" asp-route-id="@transaction.Id"
+                                   class="btn btn-outline-primary" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a asp-page="Details" asp-route-id="@transaction.Id"
+                                   class="btn btn-outline-info" title="Details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <button type="button" class="btn btn-outline-danger" title="Delete"
+                                        onclick="confirmDelete(@transaction.Id, '@transaction.Description')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Hidden form for bulk delete -->
+    <form method="post" asp-page-handler="DeleteSelected" id="bulkDeleteForm">
+        <input type="hidden" name="SelectedIds" id="selectedIdsInput" value="">
+    </form>
+    
+    <!-- Bulk Delete Confirmation Modal -->
+    <div class="modal fade" id="bulkDeleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Bulk Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-
+                <div class="modal-body">
+                    <p>Are you sure you want to delete <span id="deleteCount">0</span> selected transaction(s)?</p>
+                    <p class="text-danger"><strong>This action cannot be undone!</strong></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" onclick="submitBulkDelete()">Delete Selected</button>
+                </div>
+            </div>
+        </div>
+    </div>
                 <!-- Pagination -->
                 @if (Model.TotalPages > 1)
                 {
@@ -487,7 +521,176 @@
         });
     </script>
 
+    <script>
+        // Array to store selected transaction IDs
+        let selectedTransactions = [];
+
+        // Select All functionality
+        function selectAllTransactions() {
+            const checkboxes = document.querySelectorAll('.transaction-checkbox');
+            const selectAllBtn = document.querySelector('#selectAllHeader');
+            const isChecked = selectedTransactions.length < checkboxes.length;
+
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = isChecked;
+                const id = parseInt(checkbox.value);
+
+                if (isChecked && !selectedTransactions.includes(id)) {
+                    selectedTransactions.push(id);
+                } else if (!isChecked) {
+                    selectedTransactions = selectedTransactions.filter(x => x !== id);
+                }
+            });
+
+            selectAllBtn.checked = isChecked;
+            updateSelection();
+        }
+
+        // Toggle all checkboxes (for header checkbox)
+        function toggleAllCheckboxes() {
+            const selectAllBtn = document.querySelector('#selectAllHeader');
+            const checkboxes = document.querySelectorAll('.transaction-checkbox');
+
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAllBtn.checked;
+                const id = parseInt(checkbox.value);
+
+                if (selectAllBtn.checked && !selectedTransactions.includes(id)) {
+                    selectedTransactions.push(id);
+                } else if (!selectAllBtn.checked) {
+                    selectedTransactions = selectedTransactions.filter(x => x !== id);
+                }
+            });
+
+            updateSelection();
+        }
+
+        // Update selection count and UI
+        function updateSelection() {
+            const checkboxes = document.querySelectorAll('.transaction-checkbox');
+            selectedTransactions = [];
+
+            checkboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    selectedTransactions.push(parseInt(checkbox.value));
+                }
+            });
+
+            // Update display
+            const selectedCountDisplay = document.getElementById('selectedCountDisplay');
+            const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+            const selectAllBtn = document.querySelector('#selectAllHeader');
+
+            selectedCountDisplay.textContent = selectedTransactions.length;
+            bulkDeleteBtn.disabled = selectedTransactions.length === 0;
+
+            // Update "Select All" button text
+            const selectAllButton = document.querySelector('button[onclick="selectAllTransactions()"]');
+            if (selectedTransactions.length === checkboxes.length && checkboxes.length > 0) {
+                selectAllButton.innerHTML = '<i class="bi bi-x-square"></i> Deselect All';
+                selectAllBtn.checked = true;
+            } else {
+                selectAllButton.innerHTML = '<i class="bi bi-check-square"></i> Select All';
+                selectAllBtn.checked = false;
+            }
+
+            // Indeterminate state for select all checkbox
+            selectAllBtn.indeterminate = selectedTransactions.length > 0 && selectedTransactions.length < checkboxes.length;
+
+            // Highlight selected rows
+            checkboxes.forEach(checkbox => {
+                const row = checkbox.closest('tr');
+                if (checkbox.checked) {
+                    row.classList.add('selected-row');
+                } else {
+                    row.classList.remove('selected-row');
+                }
+            });
+        }
+
+        // Show bulk delete confirmation modal
+        function showBulkDeleteModal() {
+            if (selectedTransactions.length === 0) {
+                alert('Please select at least one transaction to delete.');
+                return;
+            }
+
+            document.getElementById('deleteCount').textContent = selectedTransactions.length;
+            const modal = new bootstrap.Modal(document.getElementById('bulkDeleteModal'));
+            modal.show();
+        }
+
+        // Submit bulk delete
+        function submitBulkDelete() {
+            // Set the selected IDs in the hidden input
+            document.getElementById('selectedIdsInput').value = selectedTransactions.join(',');
+
+            // Submit the form
+            document.getElementById('bulkDeleteForm').submit();
+        }
+
+        // Single delete confirmation (your existing function)
+        function confirmDelete(id, description) {
+            if (confirm(`Are you sure you want to delete "${description}"?`)) {
+                // Create a form and submit it
+                const form = document.createElement('form');
+                form.method = 'post';
+                form.action = window.location.pathname + '?handler=Delete&id=' + id;
+
+                // Add antiforgery token
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                const tokenInput = document.createElement('input');
+                tokenInput.type = 'hidden';
+                tokenInput.name = '__RequestVerificationToken';
+                tokenInput.value = token;
+                form.appendChild(tokenInput);
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateSelection();
+        });
+    </script>
     <style>
+        /* Style for checkboxes */
+        .transaction-checkbox {
+            cursor: pointer;
+            transform: scale(1.2);
+        }
+
+        #selectAllHeader {
+            cursor: pointer;
+            transform: scale(1.2);
+        }
+
+        /* Highlight selected rows */
+        tr.selected-row {
+            background-color: rgba(13, 110, 253, 0.1) !important;
+        }
+
+            tr.selected-row:hover {
+                background-color: rgba(13, 110, 253, 0.15) !important;
+            }
+
+        /* Make the bulk actions toolbar more visible */
+        #selectedInfo {
+            font-size: 0.9rem;
+        }
+
+        #bulkDeleteBtn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #bulkDeleteBtn:not(:disabled):hover {
+            background-color: #dc3545;
+            color: white;
+        }
+
         tbody tr:hover {
             cursor: pointer;
             background-color: rgba(0, 0, 0, 0.02);

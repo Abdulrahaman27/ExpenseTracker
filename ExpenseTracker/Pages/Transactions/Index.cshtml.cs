@@ -37,6 +37,9 @@ namespace ExpenseTracker.Pages.Transactions
         [BindProperty(SupportsGet = true)]
         public Data.Models.TransactionType? Type { get; set; }
 
+        [BindProperty]
+        public string? SelectedIds { get; set; }
+
         //Pagination
         [BindProperty(SupportsGet = true)]
         public int CurrentPage { get; set; } = 1;
@@ -108,6 +111,38 @@ namespace ExpenseTracker.Pages.Transactions
         public async Task<IActionResult> OnPostDeleteAsync(int id)
         {
             await _transactionService.DeleteTransactionAsync(id);
+            return RedirectToPage(new
+            {
+                StartDate = StartDate?.ToString("yyyy-MM-dd"),
+                EndDate = EndDate?.ToString("yyyy-MM-dd"),
+                CategoryId,
+                Search,
+                Type = Type?.ToString(),
+                CurrentPage
+            });
+        }
+
+        // Delete selected Ids
+        public async Task<IActionResult> OnPostDeleteSelectedAsync()
+        {
+            if (!string.IsNullOrEmpty(SelectedIds))
+            {
+                var ids = SelectedIds.Split(',')
+                .Select(id => int.TryParse(id, out var result) ? result : 0)
+                .Where(id => id > 0)
+                .ToList();
+
+                if (ids.Any())
+                {
+                    foreach (var id in ids)
+                    {
+                        await _transactionService.DeleteTransactionAsync(id);    
+                    }
+                    TempData["SuccessMessage"] = $"Successfully deleted {ids.Count} transaction(s).";
+                }
+            }
+
+            //Preserve filters
             return RedirectToPage(new
             {
                 StartDate = StartDate?.ToString("yyyy-MM-dd"),
