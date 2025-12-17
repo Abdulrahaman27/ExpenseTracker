@@ -60,7 +60,7 @@
 </head>
 <body>
     <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top shadow">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top shadow">
         <div class="container">
             <a class="navbar-brand" asp-page="/Index">
                 <i class="bi bi-cash-stack me-2"></i>ExpenseTracker
@@ -88,6 +88,12 @@
                         <a class="nav-link @(ViewContext.RouteData.Values["Page"]?.ToString() == "/Categories/Index" ? "active" : "")"
                            asp-page="/Categories/Index">
                             <i class="bi bi-tags me-1"></i>Categories
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["Page"]?.ToString() == "/Budgets/Index" ? "active" : "")"
+                           asp-page="/Budgets/Index">
+                            <i class="bi bi-piggy-bank me-1"></i>Budgets
                         </a>
                     </li>
                     <li class="nav-item">
