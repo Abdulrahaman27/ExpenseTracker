@@ -1,0 +1,264 @@
+﻿@page
+@model ExpenseTracker.Pages.Categories.DetailsModel
+@{
+    ViewData["Title"] = "Category Details";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Category Info Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="bi bi-tag me-2"></i>@Model.Category.Name
+                    </h4>
+                    <div>
+                        <a asp-page="Edit" asp-route-id="@Model.Category.Id" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-pencil me-1"></i>Edit
+                        </a>
+                        <a asp-page="Index" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-arrow-left me-1"></i>Back
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <span class="badge" style="background-color: @Model.Category.Color; font-size: 1.1em; padding: 8px 12px;">
+                                    <i class="bi @Model.Category.Icon me-2"></i>@Model.Category.Name
+                                </span>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(Model.Category.Description))
+                            {
+                                <div class="mb-3">
+                                    <h6>Description</h6>
+                                    <p class="text-muted">@Model.Category.Description</p>
+                                </div>
+                            }
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Category Type</h6>
+                                    <p>
+                                        @if (Model.Category.Type == ExpenseTracker.Data.Models.TransactionType.Income)
+                                        {
+                                            <span class="badge bg-success">Income</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">Expense</span>
+                                        }
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Created</h6>
+                                    <p class="text-muted">@Model.Category.CreatedDate.ToString("MMM dd, yyyy")</p>
+                                </div>
+                            </div>
+
+                            @if (Model.Category.Keywords.Any())
+                            {
+                                <div class="mb-3">
+                                    <h6>Keywords for Smart Suggestions</h6>
+                                    <div>
+                                        @foreach (var keyword in Model.Category.Keywords)
+                                        {
+                                            <span class="badge bg-light text-dark border me-1 mb-1">@keyword</span>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">Transaction Statistics</h6>
+                                    <div class="display-6 fw-bold mb-2">@Model.TransactionCount</div>
+                                    <p class="text-muted">Total Transactions</p>
+
+                                    <div class="mt-3">
+                                        <div class="fs-5 fw-bold @(Model.TotalAmount >= 0 ? "text-success" : "text-danger")">
+                                            @Model.TotalAmount.ToString("C")
+                                        </div>
+                                        <p class="text-muted">Net Amount</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Transactions -->
+            @if (Model.RecentTransactions.Any())
+            {
+                <div class="card shadow">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="bi bi-receipt me-2"></i>Recent Transactions
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Description</th>
+                                        <th>Type</th>
+                                        <th class="text-end">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var transaction in Model.RecentTransactions)
+                                    {
+                                        <tr>
+                                            <td>@transaction.Date.ToString("MMM dd, yyyy")</td>
+                                            <td>@transaction.Description</td>
+                                            <td>
+                                                @if (transaction.Type == ExpenseTracker.Data.Models.TransactionType.Income)
+                                                {
+                                                    <span class="badge bg-success">Income</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-danger">Expense</span>
+                                                }
+                                            </td>
+                                            <td class="text-end fw-bold @(transaction.Type == ExpenseTracker.Data.Models.TransactionType.Income ? "text-success" : "text-danger")">
+                                                @transaction.Amount.ToString("C")
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        @if (Model.TransactionCount > 10)
+                        {
+                            <div class="text-center mt-3">
+                                <a asp-page="/Transactions/Index" asp-route-categoryId="@Model.Category.Id"
+                                   class="btn btn-outline-primary btn-sm">
+                                    View All Transactions
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="card shadow">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-receipt display-4 text-muted mb-3"></i>
+                        <h5 class="text-muted">No Transactions Yet</h5>
+                        <p class="text-muted">This category doesn't have any transactions yet.</p>
+                        <a asp-page="/Transactions/Create" class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-2"></i>Add Transaction
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="col-md-4">
+            <!-- Quick Actions -->
+            <div class="card shadow mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-lightning me-2"></i>Quick Actions
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a asp-page="/Transactions/Create" asp-route-categoryId="@Model.Category.Id"
+                           class="btn btn-success">
+                            <i class="bi bi-plus-circle me-2"></i>Add Transaction
+                        </a>
+                        <a asp-page="Edit" asp-route-id="@Model.Category.Id" class="btn btn-outline-primary">
+                            <i class="bi bi-pencil me-2"></i>Edit Category
+                        </a>
+                        <button type="button" class="btn btn-outline-danger"
+                                onclick="confirmDelete(@Model.Category.Id, '@Model.Category.Name')">
+                            <i class="bi bi-trash me-2"></i>Delete Category
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Usage Tips -->
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i>Category Usage
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <strong>@Model.TransactionCount transactions</strong> use this category
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-currency-dollar text-primary me-2"></i>
+                            Net amount: <span class="@(Model.TotalAmount >= 0 ? "text-success" : "text-danger")">
+                                @Model.TotalAmount.ToString("C")
+                            </span>
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-calendar text-info me-2"></i>
+                            Created: @Model.Category.CreatedDate.ToString("MMM dd, yyyy")
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Category</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete category "<span id="categoryName"></span>"?</p>
+                <p class="text-danger">
+                    <small>
+                        Note: Categories with existing transactions cannot be deleted.
+                        @if (Model.TransactionCount > 0)
+                        {
+                            <text><br /></text>
+                            <text>This category has @Model.TransactionCount transactions.</text>
+                        }
+                    </small>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" asp-page="/Categories/Index" asp-page-handler="Delete" id="deleteForm">
+                    <input type="hidden" name="id" id="categoryId">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmDelete(id, name) {
+            document.getElementById('categoryId').value = id;
+            document.getElementById('categoryName').textContent = name;
+
+            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            modal.show();
+        }
+    </script>
+}

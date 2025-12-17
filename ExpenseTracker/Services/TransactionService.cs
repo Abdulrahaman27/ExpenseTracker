@@ -20,6 +20,7 @@ namespace ExpenseTracker.Services
         Task<Category> SuggestCategoryAsync(string description);
         Task<List<Transaction>> GetRecurringTransactionsAsync();
         Task GenerateRecurringTransactionsAsync();
+        Task<List<Transaction>> GetTransactionsByCategoryAsync(int categoryId);
         Task<byte[]> ExportToCsvAsync(DateTime? startDate = null, DateTime? endDate = null);
     }
 
@@ -296,6 +297,15 @@ namespace ExpenseTracker.Services
                 _context.Transactions.Remove(transaction);
                 await _context.SaveChangesAsync();
             }
+        }
+
+        public async Task<List<Transaction>> GetTransactionsByCategoryAsync(int categoryId)
+        {
+            return await _context.Transactions
+                .Include(t => t.Category)
+                .Where(t => t.CategoryId == categoryId)
+                .OrderByDescending(t => t.Date)
+                .ToListAsync();
         }
     }
 

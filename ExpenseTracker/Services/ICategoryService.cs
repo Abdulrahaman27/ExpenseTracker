@@ -11,5 +11,7 @@ namespace ExpenseTracker.Services
         Task UpdateCategoryAsync(Category category);
         Task DeleteCategoryAsync(int id);
         Task<List<Category>> GetCategoriesByTypeAsync(TransactionType type);
+
+        Task<int> GetTransactionCountAsync(int CategoryId);
     }
 }

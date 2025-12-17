@@ -59,5 +59,12 @@ namespace ExpenseTracker.Services
                 .OrderBy(c => c.Name)
                 .ToListAsync();
         }
+
+        public async Task<int> GetTransactionCountAsync(int categoryId)
+        {
+            return await _context.Transactions
+                .Where(t => t.CategoryId == categoryId)
+                .CountAsync();
+        }
     }
 }

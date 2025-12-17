@@ -8,13 +8,13 @@ namespace ExpenseTracker.Data.Models
         public int Id { get; set; }
 
         [Required]
-        [StringLength(50)]
+        [StringLength(100)]
         public string Name { get; set; } = string.Empty;
 
-        [Required]
+        [StringLength(50)]
         public string Icon { get; set; } = "bi-tag";
 
-        [Required]
+        [StringLength(50)]
         public string Color { get; set; } = "#6c757d";
         
         [Required]
@@ -22,6 +22,9 @@ namespace ExpenseTracker.Data.Models
 
         [StringLength(200)]
         public string? Description { get; set; }
+
+        public DateTime CreatedDate { get; set; } = DateTime.Now;
+        public DateTime ModifiedDate { get; set; } = DateTime.Now;
 
         public ICollection<Transaction>? Transactions { get; set; }
 
