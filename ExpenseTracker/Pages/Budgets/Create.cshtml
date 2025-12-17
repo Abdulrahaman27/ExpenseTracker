@@ -4,161 +4,209 @@
     ViewData["Title"] = "Create Budget";
 }
 
-<div class="container">
+<div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">
-                        <i class="bi bi-plus-circle me-2"></i>@ViewData["Title"]
-                    </h4>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-plus-circle me-2"></i>Create New Budget
+                        </h4>
+                        <a asp-page="Index" class="btn btn-sm btn-light">
+                            <i class="fas fa-arrow-left me-1"></i> Back to List
+                        </a>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <form method="post" id="createForm">
-                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-                        <!-- Budget Name -->
-                        <div class="row mb-3">
-                            <div class="col-md-12">
-                                <label asp-for="Budget.Name" class="form-label required"></label>
-                                <input asp-for="Budget.Name" class="form-control"
-                                       placeholder="e.g., Monthly Groceries, Entertainment Budget" />
-                                <span asp-validation-for="Budget.Name" class="text-danger"></span>
-                                <small class="text-muted">Enter a descriptive name for your budget</small>
-                            </div>
+                <div class="card-body">
+                    <form method="post" id="budgetForm">
+                        <!-- Validation Summary -->
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <!-- Name -->
+                        <div class="mb-3">
+                            <label asp-for="Budget.Name" class="form-label">
+                                <i class="fas fa-tag me-1"></i>Budget Name *
+                            </label>
+                            <input asp-for="Budget.Name" class="form-control"
+                                   placeholder="e.g., Groceries, Entertainment, etc." />
+                            <span asp-validation-for="Budget.Name" class="text-danger small"></span>
+                            <div class="form-text">Give your budget a descriptive name.</div>
                         </div>
 
                         <!-- Description -->
-                        <div class="row mb-3">
-                            <div class="col-md-12">
-                                <label asp-for="Budget.Description" class="form-label"></label>
-                                <textarea asp-for="Budget.Description" class="form-control" rows="3"
-                                          placeholder="Optional description or notes about this budget..."></textarea>
-                                <span asp-validation-for="Budget.Description" class="text-danger"></span>
-                            </div>
+                        <div class="mb-3">
+                            <label asp-for="Budget.Description" class="form-label">
+                                <i class="fas fa-align-left me-1"></i>Description
+                            </label>
+                            <textarea asp-for="Budget.Description" class="form-control"
+                                      rows="3"
+                                      placeholder="Optional: Describe what this budget covers"></textarea>
+                            <span asp-validation-for="Budget.Description" class="text-danger small"></span>
                         </div>
 
-                        <!-- Amount and Period -->
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label asp-for="Budget.Amount" class="form-label required"></label>
+                        <div class="row">
+                            <!-- Amount -->
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Budget.Amount" class="form-label">
+                                    <i class="fas fa-money-bill-wave me-1"></i>Budget Amount *
+                                </label>
                                 <div class="input-group">
                                     <span class="input-group-text">$</span>
-                                    <input asp-for="Budget.Amount" class="form-control"
-                                           type="number" step="0.01" min="0.01"
+                                    <input asp-for="Budget.Amount" type="number" step="0.01" min="0.01"
+                                           class="form-control"
                                            placeholder="0.00" />
                                 </div>
-                                <span asp-validation-for="Budget.Amount" class="text-danger"></span>
-                                <small class="text-muted">Maximum amount you want to spend</small>
+                                <span asp-validation-for="Budget.Amount" class="text-danger small"></span>
+                                <div class="form-text">The maximum amount you plan to spend.</div>
                             </div>
 
-                            <div class="col-md-6">
-                                <label asp-for="Budget.Period" class="form-label required"></label>
-                                <select asp-for="Budget.Period" class="form-select" id="periodSelect">
-                                    @foreach (var option in Model.PeriodOptions)
-                                    {
-                                        <option value="@option.Value">@option.Text</option>
-                                    }
+                            <!-- Category -->
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Budget.CategoryId" class="form-label">
+                                    <i class="fas fa-folder me-1"></i>Category
+                                </label>
+                                <select asp-for="Budget.CategoryId" asp-items="Model.Categories"
+                                        class="form-select">
+                                    <option value="">Select Category (Optional)</option>
                                 </select>
-                                <span asp-validation-for="Budget.Period" class="text-danger"></span>
+                                <span asp-validation-for="Budget.CategoryId" class="text-danger small"></span>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Leave empty for an overall budget that tracks all expenses.
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Dates -->
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label asp-for="Budget.StartDate" class="form-label required"></label>
-                                <input asp-for="Budget.StartDate" class="form-control"
-                                       type="date" id="startDate" />
-                                <span asp-validation-for="Budget.StartDate" class="text-danger"></span>
+                        <!-- Period -->
+                        <div class="mb-3">
+                            <label asp-for="Budget.Period" class="form-label">
+                                <i class="fas fa-calendar-alt me-1"></i>Budget Period *
+                            </label>
+                            <select asp-for="Budget.Period" asp-items="Model.PeriodOptions"
+                                    class="form-select" id="periodSelect">
+                            </select>
+                            <span asp-validation-for="Budget.Period" class="text-danger small"></span>
+                        </div>
+
+                        <div class="row">
+                            <!-- Start Date -->
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Budget.StartDate" class="form-label">
+                                    <i class="fas fa-play-circle me-1"></i>Start Date *
+                                </label>
+                                <input asp-for="Budget.StartDate" type="date"
+                                       class="form-control"
+                                       asp-format="{0:yyyy-MM-dd}" />
+                                <span asp-validation-for="Budget.StartDate" class="text-danger small"></span>
                             </div>
 
-                            <div class="col-md-6">
-                                <label asp-for="Budget.EndDate" class="form-label">End Date (Optional)</label>
-                                <input asp-for="Budget.EndDate" class="form-control"
-                                       type="date" id="endDate" />
-                                <span asp-validation-for="Budget.EndDate" class="text-danger"></span>
-                                <small class="text-muted">Leave empty for ongoing budgets</small>
+                            <!-- End Date -->
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Budget.EndDate" class="form-label">
+                                    <i class="fas fa-stop-circle me-1"></i>End Date
+                                </label>
+                                <input asp-for="Budget.EndDate" type="date"
+                                       class="form-control"
+                                       asp-format="{0:yyyy-MM-dd}"
+                                       id="endDateInput" />
+                                <span asp-validation-for="Budget.EndDate" class="text-danger small"></span>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Optional for ongoing budgets. Required for "Custom" period.
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Category -->
-                        <div class="row mb-3">
-                            <div class="col-md-12">
-                                <label asp-for="Budget.CategoryId" class="form-label">Category (Optional)</label>
-                                <select asp-for="Budget.CategoryId" class="form-select" id="categorySelect">
-                                    @foreach (var category in Model.Categories)
-                                    {
-                                        <option value="@category.Value">@category.Text</option>
-                                    }
-                                </select>
-                                <span asp-validation-for="Budget.CategoryId" class="text-danger"></span>
-                                <small class="text-muted">Select a specific category or leave as "All Categories" for overall budget</small>
-                            </div>
-                        </div>
-
-                        <!-- Preview -->
-                        <div class="card mb-3">
-                            <div class="card-header">
-                                <h6 class="mb-0"><i class="bi bi-eye me-2"></i>Budget Preview</h6>
-                            </div>
+                        <!-- Period Info Card -->
+                        <div class="card bg-light mb-4" id="periodInfoCard">
                             <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <small class="text-muted">Budget Period:</small>
-                                        <div class="fw-bold" id="previewPeriod">Monthly</div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <small class="text-muted">Date Range:</small>
-                                        <div class="fw-bold" id="previewDateRange">
-                                            @DateTime.Now.ToString("MMM dd, yyyy") -
-                                            @DateTime.Now.AddMonths(1).AddDays(-1).ToString("MMM dd, yyyy")
-                                        </div>
-                                    </div>
-                                </div>
-                                <hr>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <small class="text-muted">Budget Limit:</small>
-                                        <div class="h5 mb-0 fw-bold text-primary" id="previewAmount">$0.00</div>
-                                    </div>
-                                    <div>
-                                        <small class="text-muted">Scope:</small>
-                                        <div class="fw-bold" id="previewScope">All Categories</div>
-                                    </div>
-                                </div>
+                                <h6 class="card-title">
+                                    <i class="fas fa-info-circle text-primary me-2"></i>
+                                    <span id="periodInfoTitle">Monthly Budget</span>
+                                </h6>
+                                <p class="card-text mb-0" id="periodInfoText">
+                                    Resets automatically at the end of each month. Perfect for regular monthly expenses.
+                                </p>
                             </div>
                         </div>
 
-                        <!-- Actions -->
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <button type="submit" class="btn btn-success">
-                                    <i class="bi bi-check-circle me-2"></i>Create Budget
-                                </button>
-                            </div>
-                            <div>
-                                <a asp-page="Index" class="btn btn-secondary">
-                                    <i class="bi bi-x-circle me-2"></i>Cancel
-                                </a>
-                            </div>
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-page="Index" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-check me-2"></i>Create Budget
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
 
-            <!-- Quick Tips -->
-            <div class="card shadow mt-3">
-                <div class="card-header bg-light">
-                    <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Budgeting Tips</h6>
+            <!-- Example Budgets Card -->
+            <div class="card mt-4 border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>Budget Examples
+                    </h5>
                 </div>
                 <div class="card-body">
-                    <ul class="list-unstyled mb-0">
-                        <li><i class="bi bi-check text-success me-2"></i>Monthly budgets reset on the 1st of each month</li>
-                        <li><i class="bi bi-check text-success me-2"></i>Category-specific budgets track spending for that category only</li>
-                        <li><i class="bi bi-check text-success me-2"></i>Overall budgets track total spending across all categories</li>
-                        <li><i class="bi bi-check text-success me-2"></i>Set realistic amounts based on your past spending</li>
-                    </ul>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-shopping-cart text-primary fa-lg me-3"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Groceries</h6>
+                                    <p class="mb-0 text-muted small">
+                                        Monthly budget of $400 for all grocery shopping
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-utensils text-success fa-lg me-3"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Dining Out</h6>
+                                    <p class="mb-0 text-muted small">
+                                        Weekly budget of $100 for restaurants
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-car text-danger fa-lg me-3"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Transportation</h6>
+                                    <p class="mb-0 text-muted small">
+                                        Monthly budget of $200 for gas and parking
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-film text-warning fa-lg me-3"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Entertainment</h6>
+                                    <p class="mb-0 text-muted small">
+                                        Monthly budget of $150 for movies and subscriptions
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -169,115 +217,180 @@
     <partial name="_ValidationScriptsPartial" />
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const amountInput = document.getElementById('Budget_Amount');
-            const periodSelect = document.getElementById('periodSelect');
-            const startDateInput = document.getElementById('startDate');
-            const endDateInput = document.getElementById('endDate');
-            const categorySelect = document.getElementById('categorySelect');
-
-            const previewAmount = document.getElementById('previewAmount');
-            const previewPeriod = document.getElementById('previewPeriod');
-            const previewDateRange = document.getElementById('previewDateRange');
-            const previewScope = document.getElementById('previewScope');
-
-            function updatePreview() {
-                // Update amount
-                const amount = parseFloat(amountInput.value) || 0;
-                previewAmount.textContent = '$' + amount.toFixed(2);
-
-                // Update period
-                const periodText = periodSelect.options[periodSelect.selectedIndex].text;
-                previewPeriod.textContent = periodText;
-
-                // Update scope
-                const categoryText = categorySelect.options[categorySelect.selectedIndex].text;
-                previewScope.textContent = categoryText;
-
-                // Update date range based on period
-                updateDateRange();
+        // Period information mapping
+        const periodInfo = {
+            0: {
+                title: "Daily Budget",
+                text: "Resets every day. Great for tracking daily spending habits."
+            },
+            1: {
+                title: "Weekly Budget",
+                text: "Resets every Monday. Perfect for weekly allowances or regular expenses."
+            },
+            2: {
+                title: "Monthly Budget",
+                text: "Resets on the 1st of each month. Ideal for monthly bills and regular expenses."
+            },
+            3: {
+                title: "Quarterly Budget",
+                text: "Resets every 3 months. Good for seasonal expenses or quarterly goals."
+            },
+            4: {
+                title: "Yearly Budget",
+                text: "Resets on January 1st. Perfect for annual subscriptions or long-term goals."
+            },
+            5: {
+                title: "Custom Budget",
+                text: "You define the start and end dates. Use for specific projects or events."
             }
+        };
 
-            function updateDateRange() {
-                const period = parseInt(periodSelect.value);
-                const startDate = new Date(startDateInput.value || new Date());
+        // Update period info when selection changes
+        document.getElementById('periodSelect').addEventListener('change', function() {
+            const periodValue = this.value;
+            const info = periodInfo[periodValue];
 
-                let endDate = new Date(startDate);
+            if (info) {
+                document.getElementById('periodInfoTitle').textContent = info.title;
+                document.getElementById('periodInfoText').textContent = info.text;
 
-                switch (period) {
-                    case 0: // Daily
-                        endDate.setDate(endDate.getDate() + 1);
-                        break;
-                    case 1: // Weekly
-                        endDate.setDate(endDate.getDate() + 7);
-                        break;
-                    case 2: // Monthly
-                        endDate.setMonth(endDate.getMonth() + 1);
-                        break;
-                    case 3: // Quarterly
-                        endDate.setMonth(endDate.getMonth() + 3);
-                        break;
-                    case 4: // Yearly
-                        endDate.setFullYear(endDate.getFullYear() + 1);
-                        break;
-                    case 5: // Custom
-                        if (endDateInput.value) {
-                            endDate = new Date(endDateInput.value);
-                        } else {
-                            endDate.setMonth(endDate.getMonth() + 1);
-                        }
-                        break;
+                // Show/hide end date based on period
+                const endDateInput = document.getElementById('endDateInput');
+                if (periodValue === '5') { // Custom
+                    endDateInput.setAttribute('required', 'required');
+                    endDateInput.parentElement.querySelector('.form-text').innerHTML =
+                        '<i class="fas fa-exclamation-circle me-1"></i>Required for custom period.';
+                } else {
+                    endDateInput.removeAttribute('required');
+                    endDateInput.parentElement.querySelector('.form-text').innerHTML =
+                        '<i class="fas fa-info-circle me-1"></i>Optional for ongoing budgets. Required for "Custom" period.';
                 }
-
-                // Format dates
-                const formatDate = (date) => {
-                    return date.toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric'
-                    });
-                };
-
-                previewDateRange.textContent = formatDate(startDate) + ' - ' + formatDate(endDate);
             }
+        });
 
-            // Initialize preview
-            updatePreview();
+        // Set default end date based on period
+        document.addEventListener('DOMContentLoaded', function() {
+            const periodSelect = document.getElementById('periodSelect');
+            const startDateInput = document.querySelector('input[name="Budget.StartDate"]');
+            const endDateInput = document.getElementById('endDateInput');
 
-            // Event listeners
-            amountInput.addEventListener('input', updatePreview);
-            periodSelect.addEventListener('change', updatePreview);
-            startDateInput.addEventListener('change', updatePreview);
-            endDateInput.addEventListener('change', updatePreview);
-            categorySelect.addEventListener('change', updatePreview);
-
-            // Set minimum date to today for start date
-            const today = new Date().toISOString().split('T')[0];
-            startDateInput.min = today;
+            // Trigger change event to set initial values
+            periodSelect.dispatchEvent(new Event('change'));
 
             // Auto-set end date based on period
             periodSelect.addEventListener('change', function() {
-                const period = parseInt(this.value);
-                if (period === 5) { // Custom
-                    endDateInput.disabled = false;
-                    return;
-                }
+                if (startDateInput.value && this.value !== '5') { // Not custom
+                    const startDate = new Date(startDateInput.value);
+                    let endDate = new Date(startDate);
 
-                endDateInput.disabled = true;
-                updateDateRange();
+                    switch(this.value) {
+                        case '0': // Daily
+                            endDate.setDate(endDate.getDate() + 1);
+                            break;
+                        case '1': // Weekly
+                            endDate.setDate(endDate.getDate() + 7);
+                            break;
+                        case '2': // Monthly
+                            endDate.setMonth(endDate.getMonth() + 1);
+                            break;
+                        case '3': // Quarterly
+                            endDate.setMonth(endDate.getMonth() + 3);
+                            break;
+                        case '4': // Yearly
+                            endDate.setFullYear(endDate.getFullYear() + 1);
+                            break;
+                    }
+
+                    if (this.value !== '5') {
+                        endDateInput.value = endDate.toISOString().split('T')[0];
+                    }
+                }
             });
+
+            // Update end date when start date changes
+            startDateInput.addEventListener('change', function() {
+                periodSelect.dispatchEvent(new Event('change'));
+            });
+        });
+
+        // Form submission handling
+        document.getElementById('budgetForm').addEventListener('submit', function(e) {
+            // Additional validation
+            const periodSelect = document.getElementById('periodSelect');
+            const endDateInput = document.getElementById('endDateInput');
+            const startDateInput = document.querySelector('input[name="Budget.StartDate"]');
+
+            if (periodSelect.value === '5' && !endDateInput.value) {
+                e.preventDefault();
+                alert('Please specify an end date for custom budgets.');
+                endDateInput.focus();
+                return false;
+            }
+
+            if (endDateInput.value && startDateInput.value) {
+                const startDate = new Date(startDateInput.value);
+                const endDate = new Date(endDateInput.value);
+
+                if (endDate <= startDate) {
+                    e.preventDefault();
+                    alert('End date must be after start date.');
+                    endDateInput.focus();
+                    return false;
+                }
+            }
+
+            return true;
         });
     </script>
 
     <style>
-        .required:after {
-            content: " *";
-            color: #dc3545;
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
         }
 
-        input:focus, select:focus {
-            border-color: #86b7fe;
-            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        .form-control, .form-select {
+            border-radius: 0.375rem;
+            border: 1px solid #ced4da;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+
+            .form-control:focus, .form-select:focus {
+                border-color: #86b7fe;
+                box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+            }
+
+        .input-group-text {
+            background-color: #f8f9fa;
+            border: 1px solid #ced4da;
+        }
+
+        .card {
+            border: none;
+            border-radius: 0.5rem;
+        }
+
+        .card-header {
+            border-radius: 0.5rem 0.5rem 0 0 !important;
+        }
+
+        .btn {
+            border-radius: 0.375rem;
+            padding: 0.5rem 1.5rem;
+            font-weight: 500;
+        }
+
+        .text-danger small {
+            font-size: 0.875em;
+        }
+
+        .form-text {
+            font-size: 0.875em;
+            margin-top: 0.25rem;
+        }
+
+        .fa-lg {
+            font-size: 1.25em;
         }
     </style>
 }

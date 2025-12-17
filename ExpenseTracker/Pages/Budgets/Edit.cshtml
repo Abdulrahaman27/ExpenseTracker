@@ -4,111 +4,307 @@
     ViewData["Title"] = "Edit Budget";
 }
 
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow">
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">
-                        <i class="bi bi-pencil me-2"></i>@ViewData["Title"]
-                    </h4>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-edit me-2"></i>Edit Budget
+                        </h4>
+                        <a asp-page="Index" class="btn btn-sm btn-light">
+                            <i class="fas fa-arrow-left me-1"></i> Back to List
+                        </a>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <form method="post" id="editForm">
-                        <input type="hidden" asp-for="Budget.Id" />
-                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-                        <!-- Same form structure as Create.cshtml -->
-                        <!-- You can copy the entire form from Create.cshtml but change: -->
-                        <!-- 1. Button text to "Update Budget" -->
-                        <!-- 2. Initialize form with existing values -->
-                        <!-- Budget Name -->
-                        <div class="row mb-3">
-                            <div class="col-md-12">
-                                <label asp-for="Budget.Name" class="form-label required"></label>
-                                <input asp-for="Budget.Name" class="form-control" />
-                                <span asp-validation-for="Budget.Name" class="text-danger"></span>
+                <div class="card-body">
+                    <!-- Messages -->
+                    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>@Model.ErrorMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <!-- Budget Stats -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="card border-info">
+                                <div class="card-body text-center py-3">
+                                    <h6 class="card-title text-muted mb-1">Current Spending</h6>
+                                    <h4 class="text-info">@Model.CurrentSpending.ToString("C")</h4>
+                                </div>
                             </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-success">
+                                <div class="card-body text-center py-3">
+                                    <h6 class="card-title text-muted mb-1">Remaining</h6>
+                                    <h4 class="@(Model.RemainingAmount >= 0 ? "text-success" : "text-danger")">
+                                        @Model.RemainingAmount.ToString("C")
+                                    </h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body text-center py-3">
+                                    <h6 class="card-title text-muted mb-1">Usage</h6>
+                                    <h4>@Model.PercentageUsed.ToString("F1")%</h4>
+                                    <div class="progress mt-2" style="height: 6px;">
+                                        <div class="progress-bar @(Model.PercentageUsed >= 80 ? "bg-warning" : Model.PercentageUsed >= 100 ? "bg-danger" : "bg-success")"
+                                             style="width: @(Model.PercentageUsed > 100 ? 100 : Model.PercentageUsed)%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="post" id="budgetForm">
+                        <input type="hidden" asp-for="Budget.Id" />
+
+                        <!-- Validation Summary -->
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <!-- Name -->
+                        <div class="mb-3">
+                            <label asp-for="Budget.Name" class="form-label">
+                                <i class="fas fa-tag me-1"></i>Budget Name *
+                            </label>
+                            <input asp-for="Budget.Name" class="form-control"
+                                   placeholder="e.g., Groceries, Entertainment, etc." />
+                            <span asp-validation-for="Budget.Name" class="text-danger small"></span>
                         </div>
 
                         <!-- Description -->
-                        <div class="row mb-3">
-                            <div class="col-md-12">
-                                <label asp-for="Budget.Description" class="form-label"></label>
-                                <textarea asp-for="Budget.Description" class="form-control" rows="3"></textarea>
-                                <span asp-validation-for="Budget.Description" class="text-danger"></span>
-                            </div>
+                        <div class="mb-3">
+                            <label asp-for="Budget.Description" class="form-label">
+                                <i class="fas fa-align-left me-1"></i>Description
+                            </label>
+                            <textarea asp-for="Budget.Description" class="form-control"
+                                      rows="3"
+                                      placeholder="Optional: Describe what this budget covers"></textarea>
+                            <span asp-validation-for="Budget.Description" class="text-danger small"></span>
                         </div>
 
-                        <!-- Amount and Period -->
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label asp-for="Budget.Amount" class="form-label required"></label>
+                        <div class="row">
+                            <!-- Amount -->
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Budget.Amount" class="form-label">
+                                    <i class="fas fa-money-bill-wave me-1"></i>Budget Amount *
+                                </label>
                                 <div class="input-group">
                                     <span class="input-group-text">$</span>
-                                    <input asp-for="Budget.Amount" class="form-control"
-                                           type="number" step="0.01" min="0.01" />
+                                    <input asp-for="Budget.Amount" type="number" step="0.01" min="0.01"
+                                           class="form-control"
+                                           placeholder="0.00" />
                                 </div>
-                                <span asp-validation-for="Budget.Amount" class="text-danger"></span>
+                                <span asp-validation-for="Budget.Amount" class="text-danger small"></span>
+                                <div class="form-text">The maximum amount you plan to spend.</div>
                             </div>
 
-                            <div class="col-md-6">
-                                <label asp-for="Budget.Period" class="form-label required"></label>
-                                <select asp-for="Budget.Period" class="form-select" id="periodSelect">
-                                    @foreach (var option in Model.PeriodOptions)
-                                    {
-                                        <option value="@option.Value">@option.Text</option>
-                                    }
+                            <!-- Category -->
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Budget.CategoryId" class="form-label">
+                                    <i class="fas fa-folder me-1"></i>Category
+                                </label>
+                                <select asp-for="Budget.CategoryId" asp-items="Model.Categories"
+                                        class="form-select">
+                                    <option value="">Select Category (Optional)</option>
                                 </select>
-                                <span asp-validation-for="Budget.Period" class="text-danger"></span>
+                                <span asp-validation-for="Budget.CategoryId" class="text-danger small"></span>
                             </div>
                         </div>
 
-                        <!-- Dates -->
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label asp-for="Budget.StartDate" class="form-label required"></label>
-                                <input asp-for="Budget.StartDate" class="form-control"
-                                       type="date" id="startDate" />
-                                <span asp-validation-for="Budget.StartDate" class="text-danger"></span>
+                        <!-- Period -->
+                        <div class="mb-3">
+                            <label asp-for="Budget.Period" class="form-label">
+                                <i class="fas fa-calendar-alt me-1"></i>Budget Period *
+                            </label>
+                            <select asp-for="Budget.Period" asp-items="Model.PeriodOptions"
+                                    class="form-select" id="periodSelect">
+                            </select>
+                            <span asp-validation-for="Budget.Period" class="text-danger small"></span>
+                        </div>
+
+                        <div class="row">
+                            <!-- Start Date -->
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Budget.StartDate" class="form-label">
+                                    <i class="fas fa-play-circle me-1"></i>Start Date *
+                                </label>
+                                <input asp-for="Budget.StartDate" type="date"
+                                       class="form-control"
+                                       asp-format="{0:yyyy-MM-dd}" />
+                                <span asp-validation-for="Budget.StartDate" class="text-danger small"></span>
                             </div>
 
-                            <div class="col-md-6">
-                                <label asp-for="Budget.EndDate" class="form-label">End Date (Optional)</label>
-                                <input asp-for="Budget.EndDate" class="form-control"
-                                       type="date" id="endDate" />
-                                <span asp-validation-for="Budget.EndDate" class="text-danger"></span>
+                            <!-- End Date -->
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Budget.EndDate" class="form-label">
+                                    <i class="fas fa-stop-circle me-1"></i>End Date
+                                </label>
+                                <input asp-for="Budget.EndDate" type="date"
+                                       class="form-control"
+                                       asp-format="{0:yyyy-MM-dd}"
+                                       id="endDateInput" />
+                                <span asp-validation-for="Budget.EndDate" class="text-danger small"></span>
+                                <div class="form-text" id="endDateHelp">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Optional for ongoing budgets. Required for "Custom" period.
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Category -->
-                        <div class="row mb-3">
-                            <div class="col-md-12">
-                                <label asp-for="Budget.CategoryId" class="form-label">Category (Optional)</label>
-                                <select asp-for="Budget.CategoryId" class="form-select" id="categorySelect">
-                                    @foreach (var category in Model.Categories)
-                                    {
-                                        <option value="@category.Value">@category.Text</option>
-                                    }
-                                </select>
-                                <span asp-validation-for="Budget.CategoryId" class="text-danger"></span>
+                        <!-- Notification Settings -->
+                        <div class="card bg-light mb-4">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-bell me-2"></i>Notification Settings
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-check form-switch mb-3">
+                                            <input asp-for="Budget.NotifyOnExceed" class="form-check-input"
+                                                   type="checkbox" role="switch" id="notifyExceed">
+                                            <label class="form-check-label" for="notifyExceed">
+                                                Notify when budget is exceeded
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check form-switch mb-3">
+                                            <input asp-for="Budget.NotifyOnWarning" class="form-check-input"
+                                                   type="checkbox" role="switch" id="notifyWarning">
+                                            <label class="form-check-label" for="notifyWarning">
+                                                Notify when approaching budget limit
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label asp-for="Budget.WarningThreshold" class="form-label">
+                                            Warning Threshold (%)
+                                        </label>
+                                        <div class="input-group">
+                                            <input asp-for="Budget.WarningThreshold" type="range"
+                                                   class="form-range" min="50" max="95" step="5"
+                                                   oninput="this.nextElementSibling.value = this.value + '%'">
+                                            <span class="input-group-text">
+                                                <output>@Model.Budget.WarningThreshold%</output>
+                                            </span>
+                                        </div>
+                                        <span asp-validation-for="Budget.WarningThreshold" class="text-danger small"></span>
+                                        <div class="form-text">
+                                            Receive notifications when budget usage reaches this percentage.
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Actions -->
-                        <div class="d-flex justify-content-between">
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between mt-4">
                             <div>
-                                <button type="submit" class="btn btn-success">
-                                    <i class="bi bi-check-circle me-2"></i>Update Budget
-                                </button>
-                            </div>
-                            <div>
-                                <a asp-page="Index" class="btn btn-secondary">
-                                    <i class="bi bi-x-circle me-2"></i>Cancel
+                                <a asp-page="Index" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-2"></i>Cancel
                                 </a>
+                            </div>
+                            <div>
+                                <form method="post" asp-page-handler="Reset" asp-route-id="@Model.Budget.Id"
+                                      class="d-inline" onsubmit="return confirm('Reset this budget for a new period? Current spending will be archived.');">
+                                    <button type="submit" class="btn btn-warning me-2">
+                                        <i class="fas fa-redo me-2"></i>Reset Budget
+                                    </button>
+                                </form>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Save Changes
+                                </button>
                             </div>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar with Budget Info -->
+        <div class="col-lg-4 mt-4 mt-lg-0">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Budget Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-5">Created Date</dt>
+                        <dd class="col-sm-7">@DateTime.Now.ToString("MMM dd, yyyy")</dd>
+
+                        <dt class="col-sm-5">Last Modified</dt>
+                        <dd class="col-sm-7">@DateTime.Now.ToString("MMM dd, yyyy")</dd>
+
+                        <dt class="col-sm-5">Budget Status</dt>
+                        <dd class="col-sm-7">
+                            @if (Model.RemainingAmount < 0)
+                            {
+                                <span class="badge bg-danger">Exceeded</span>
+                            }
+                            else if (Model.PercentageUsed >= 80)
+                            {
+                                <span class="badge bg-warning">Warning</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">On Track</span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-5">Period Remaining</dt>
+                        <dd class="col-sm-7" id="periodRemaining">
+                            <span class="badge bg-info">Calculating...</span>
+                        </dd>
+                    </dl>
+
+                    <div class="alert alert-info mt-3">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-lightbulb me-2"></i>Tips
+                        </h6>
+                        <ul class="mb-0 ps-3">
+                            <li>Adjust the budget amount if your spending patterns have changed</li>
+                            <li>Update the period if you want to change the reset frequency</li>
+                            <li>Use "Reset Budget" to start fresh for a new period</li>
+                            <li>Enable notifications to stay on track</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a asp-page="/Transactions/Index" class="btn btn-outline-primary">
+                            <i class="fas fa-exchange-alt me-2"></i>View Transactions
+                        </a>
+                        <a asp-page="/Reports/Index" class="btn btn-outline-success">
+                            <i class="fas fa-chart-bar me-2"></i>View Reports
+                        </a>
+                        <a asp-page="Create" class="btn btn-outline-info">
+                            <i class="fas fa-plus me-2"></i>Create Another Budget
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -119,25 +315,199 @@
     <partial name="_ValidationScriptsPartial" />
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize date inputs
-            const startDateInput = document.getElementById('startDate');
-            const endDateInput = document.getElementById('endDate');
-            const periodSelect = document.getElementById('periodSelect');
+        // Period information mapping
+        const periodInfo = {
+            0: { title: "Daily Budget", text: "Resets every day" },
+            1: { title: "Weekly Budget", text: "Resets every Monday" },
+            2: { title: "Monthly Budget", text: "Resets on the 1st of each month" },
+            3: { title: "Quarterly Budget", text: "Resets every 3 months" },
+            4: { title: "Yearly Budget", text: "Resets on January 1st" },
+            5: { title: "Custom Budget", text: "You define the start and end dates" }
+        };
 
-            // Set minimum date to today for start date
-            const today = new Date().toISOString().split('T')[0];
-            startDateInput.min = today;
+        // Update period info when selection changes
+        document.getElementById('periodSelect').addEventListener('change', function() {
+            const periodValue = this.value;
+            const info = periodInfo[periodValue];
 
-            // Handle period change
-            periodSelect.addEventListener('change', function() {
-                const period = parseInt(this.value);
-                if (period === 5) { // Custom
-                    endDateInput.disabled = false;
+            if (info) {
+                // Show/hide end date based on period
+                const endDateInput = document.getElementById('endDateInput');
+                const endDateHelp = document.getElementById('endDateHelp');
+
+                if (periodValue === '5') { // Custom
+                    endDateInput.setAttribute('required', 'required');
+                    endDateHelp.innerHTML =
+                        '<i class="fas fa-exclamation-circle me-1"></i>Required for custom period.';
                 } else {
-                    endDateInput.disabled = true;
+                    endDateInput.removeAttribute('required');
+                    endDateHelp.innerHTML =
+                        '<i class="fas fa-info-circle me-1"></i>Optional for ongoing budgets. Required for "Custom" period.';
                 }
-            });
+            }
         });
+
+        // Set default end date based on period
+        document.addEventListener('DOMContentLoaded', function() {
+            const periodSelect = document.getElementById('periodSelect');
+            const startDateInput = document.querySelector('input[name="Budget.StartDate"]');
+            const endDateInput = document.getElementById('endDateInput');
+
+            // Trigger change event to set initial values
+            if (periodSelect) {
+                periodSelect.dispatchEvent(new Event('change'));
+            }
+
+            // Calculate period remaining
+            updatePeriodRemaining();
+
+            // Update period remaining when dates change
+            startDateInput?.addEventListener('change', updatePeriodRemaining);
+            endDateInput?.addEventListener('change', updatePeriodRemaining);
+        });
+
+        function updatePeriodRemaining() {
+            const startDateInput = document.querySelector('input[name="Budget.StartDate"]');
+            const endDateInput = document.getElementById('endDateInput');
+            const periodRemaining = document.getElementById('periodRemaining');
+
+            if (!startDateInput || !endDateInput || !periodRemaining) return;
+
+            const startDate = new Date(startDateInput.value);
+            const endDate = new Date(endDateInput.value);
+            const today = new Date();
+
+            if (!endDateInput.value || endDate < today) {
+                periodRemaining.innerHTML = '<span class="badge bg-secondary">Period Ended</span>';
+                return;
+            }
+
+            const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+            const daysRemaining = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
+
+            if (daysRemaining > 0) {
+                const percentageRemaining = Math.round((daysRemaining / totalDays) * 100);
+                periodRemaining.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1 me-2">
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-success" style="width: ${percentageRemaining}%"></div>
+                            </div>
+                        </div>
+                        <div class="text-nowrap">
+                            <small>${daysRemaining} days left</small>
+                        </div>
+                    </div>
+                `;
+            } else {
+                periodRemaining.innerHTML = '<span class="badge bg-warning">Period Ends Today</span>';
+            }
+        }
+
+        // Form validation
+        document.getElementById('budgetForm')?.addEventListener('submit', function(e) {
+            const periodSelect = document.getElementById('periodSelect');
+            const endDateInput = document.getElementById('endDateInput');
+            const startDateInput = document.querySelector('input[name="Budget.StartDate"]');
+
+            if (periodSelect.value === '5' && !endDateInput.value) {
+                e.preventDefault();
+                alert('Please specify an end date for custom budgets.');
+                endDateInput.focus();
+                return false;
+            }
+
+            if (endDateInput.value && startDateInput.value) {
+                const startDate = new Date(startDateInput.value);
+                const endDate = new Date(endDateInput.value);
+
+                if (endDate <= startDate) {
+                    e.preventDefault();
+                    alert('End date must be after start date.');
+                    endDateInput.focus();
+                    return false;
+                }
+            }
+
+            return true;
+        });
+
+        // Range input feedback
+        const rangeInput = document.querySelector('input[type="range"]');
+        if (rangeInput) {
+            rangeInput.addEventListener('input', function() {
+                this.nextElementSibling.querySelector('output').textContent = this.value + '%';
+            });
+        }
     </script>
+
+    <style>
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control, .form-select {
+            border-radius: 0.375rem;
+            border: 1px solid #ced4da;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+
+            .form-control:focus, .form-select:focus {
+                border-color: #86b7fe;
+                box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+            }
+
+        .form-check-input:checked {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+
+        .form-range::-webkit-slider-thumb {
+            background-color: #0d6efd;
+        }
+
+        .form-range::-moz-range-thumb {
+            background-color: #0d6efd;
+        }
+
+        .card {
+            border: none;
+            border-radius: 0.5rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+
+        .card-header {
+            border-radius: 0.5rem 0.5rem 0 0 !important;
+            background-color: #f8f9fa;
+        }
+
+        .btn {
+            border-radius: 0.375rem;
+            padding: 0.5rem 1.5rem;
+            font-weight: 500;
+        }
+
+        .alert {
+            border-radius: 0.5rem;
+            border: none;
+        }
+
+        .badge {
+            font-size: 0.75em;
+            font-weight: 500;
+        }
+
+        dl.row dt {
+            font-weight: 500;
+        }
+
+        dl.row dd {
+            margin-bottom: 0.5rem;
+        }
+
+        .input-group-text {
+            background-color: #f8f9fa;
+        }
+    </style>
 }

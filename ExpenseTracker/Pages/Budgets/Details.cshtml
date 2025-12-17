@@ -4,388 +4,602 @@
     ViewData["Title"] = "Budget Details";
 }
 
-<div class="container">
-    <div class="row">
-        <div class="col-lg-8">
-            <!-- Budget Header Card -->
-            <div class="card shadow mb-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">
-                        <i class="bi bi-piggy-bank me-2"></i>@Model.Budget.Name
-                    </h4>
-                    <div>
-                        <a asp-page="Edit" asp-route-id="@Model.Budget.Id" class="btn btn-outline-primary btn-sm">
-                            <i class="bi bi-pencil me-1"></i>Edit
-                        </a>
-                        <a asp-page="Index" class="btn btn-outline-secondary btn-sm">
-                            <i class="bi bi-arrow-left me-1"></i>Back
-                        </a>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-8">
-                            @if (!string.IsNullOrEmpty(Model.Budget.Description))
-                            {
-                                <div class="mb-3">
-                                    <p class="text-muted">@Model.Budget.Description</p>
-                                </div>
-                            }
+<div class="container-fluid">
+    <!-- Messages -->
+    @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>@Model.SuccessMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
 
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <small class="text-muted">Budget Period</small>
-                                    <div class="fw-bold">
-                                        @Model.Budget.Period
-                                        @if (Model.Budget.EndDate.HasValue)
-                                        {
-                                            <br>
-                                            <small class="text-muted">
-                                                @Model.Budget.StartDate.ToString("MMM dd, yyyy") - 
-                                                @Model.Budget.EndDate.Value.ToString("MMM dd, yyyy")
-                                            </small>
-                                        }
-                                        else
-                                        {
-                                            <br>
-                                            <small class="text-muted">
-                                                Started @Model.Budget.StartDate.ToString("MMM dd, yyyy") (Ongoing)
-                                            </small>
-                                        }
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <small class="text-muted">Category</small>
-                                    <div class="fw-bold">
-                                        @if (Model.Budget.Category != null)
-                                        {
-                                            <span class="badge" style="background-color: @Model.Budget.Category.Color">
-                                                <i class="bi @Model.Budget.Category.Icon me-1"></i>
-                                                @Model.Budget.Category.Name
-                                            </span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-secondary">All Categories</span>
-                                        }
-                                    </div>
-                                </div>
-                            </div>
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>@Model.ErrorMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
 
-                            <!-- Progress Bar -->
-                            <div class="mb-3">
-                                <div class="d-flex justify-content-between mb-2">
-                                    <small class="text-muted">Budget Progress</small>
-                                    <small class="fw-bold @(Model.IsOverBudget ? "text-danger" : "text-success")">
-                                        @Model.PercentageUsed.ToString("F1")%
-                                    </small>
-                                </div>
-                                <div class="progress" style="height: 20px;">
-                                    <div class="progress-bar @Model.ProgressBarColor progress-bar-striped progress-bar-animated" 
-                                         role="progressbar" 
-                                         style="width: @(Model.PercentageUsed > 100 ? 100 : Model.PercentageUsed)%;"
-                                         aria-valuenow="@Model.PercentageUsed" 
-                                         aria-valuemin="0" 
-                                         aria-valuemax="100">
-                                        @Model.PercentageUsed.ToString("F1")%
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-4">
-                            <div class="card bg-light">
-                                <div class="card-body text-center">
-                                    <small class="text-muted">BUDGET LIMIT</small>
-                                    <div class="h4 fw-bold text-primary mb-3">@Model.Budget.Amount.ToString("C")</div>
-                                    
-                                    <div class="row">
-                                        <div class="col-6">
-                                            <small class="text-muted">SPENT</small>
-                                            <div class="h5 fw-bold @(Model.IsOverBudget ? "text-danger" : "text-success")">
-                                                @Model.TotalSpent.ToString("C")
-                                            </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <small class="text-muted">REMAINING</small>
-                                            <div class="h5 fw-bold @(Model.RemainingAmount < 0 ? "text-danger" : "text-success")">
-                                                @Model.RemainingAmount.ToString("C")
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="mt-3">
-                                        @if (Model.IsOverBudget)
-                                        {
-                                            <span class="badge bg-danger">
-                                                <i class="bi bi-exclamation-triangle me-1"></i>Over Budget
-                                            </span>
-                                        }
-                                        else if (Model.PercentageUsed >= 80)
-                                        {
-                                            <span class="badge bg-warning">
-                                                <i class="bi bi-exclamation-circle me-1"></i>Approaching Limit
-                                            </span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-success">
-                                                <i class="bi bi-check-circle me-1"></i>On Track
-                                            </span>
-                                        }
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <!-- Header with Actions -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-page="Index">Budgets</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">@Model.Budget?.Name</li>
+                </ol>
+            </nav>
+            <h1 class="h2 mb-0">
+                <i class="fas fa-wallet text-primary me-2"></i>Budget Details
+            </h1>
+        </div>
+        <div class="btn-group">
+            <a asp-page="Edit" asp-route-id="@Model.Budget?.Id" class="btn btn-primary">
+                <i class="fas fa-edit me-2"></i>Edit
+            </a>
+            <a asp-page="Index" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back
+            </a>
+        </div>
+    </div>
 
-            <!-- Recent Transactions -->
-            @if (Model.RecentTransactions.Any())
-            {
-                <div class="card shadow">
-                    <div class="card-header">
-                        <h6 class="mb-0">
-                            <i class="bi bi-receipt me-2"></i>Recent Transactions
-                        </h6>
+    @if (Model.Budget != null)
+    {
+        <!-- Main Content -->
+        <div class="row">
+            <!-- Left Column: Budget Overview -->
+            <div class="col-lg-8">
+                <!-- Budget Summary Card -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Budget Overview</h5>
                     </div>
                     <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Description</th>
-                                        <th>Category</th>
-                                        <th class="text-end">Amount</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var transaction in Model.RecentTransactions)
+                        <div class="row">
+                            <div class="col-md-3 text-center mb-4 mb-md-0">
+                                <div class="mb-3">
+                                    <div class="position-relative d-inline-block">
+                                        <div class="progress-circle"
+                                             data-percentage="@Model.Budget.PercentageUsed"
+                                             data-size="120"
+                                             data-color="@(Model.Budget.PercentageUsed >= 100 ? "#dc3545" : Model.Budget.PercentageUsed >= 80 ? "#ffc107" : "#28a745")">
+                                        </div>
+                                        <div class="position-absolute top-50 start-50 translate-middle text-center">
+                                            <span class="fw-bold fs-4">@Model.Budget.PercentageUsed.ToString("F0")%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    @if (Model.Budget.PercentageUsed >= Model.Budget.WarningThreshold)
                                     {
-                                        <tr>
-                                            <td>
-                                                <small>@transaction.Date.ToString("MMM dd")</small>
-                                                <div class="text-muted" style="font-size: 0.75rem">
-                                                    @transaction.Date.ToString("hh:mm tt")
-                                                </div>
-                                            </td>
-                                            <td>@transaction.Description</td>
-                                            <td>
-                                                @if (transaction.Category != null)
-                                                {
-                                                    <span class="badge" style="background-color: @transaction.Category.Color">
-                                                        @transaction.Category.Name
-                                                    </span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="badge bg-secondary">Uncategorized</span>
-                                                }
-                                            </td>
-                                            <td class="text-end fw-bold text-danger">
-                                                -@transaction.Amount.ToString("C")
-                                            </td>
-                                        </tr>
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-exclamation-circle me-1"></i>Warning
+                                        </span>
                                     }
-                                </tbody>
-                            </table>
+                                    else
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check-circle me-1"></i>On Track
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="col-md-9">
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <div class="border rounded p-3 text-center bg-light">
+                                            <h6 class="text-muted mb-2">Budgeted</h6>
+                                            <h4 class="text-primary">@Model.Budget.Amount.ToString("C")</h4>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="border rounded p-3 text-center bg-light">
+                                            <h6 class="text-muted mb-2">Spent</h6>
+                                            <h4 class="@(Model.Budget.CurrentSpending > Model.Budget.Amount ? "text-danger" : "text-success")">
+                                                @Model.Budget.CurrentSpending.ToString("C")
+                                            </h4>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="border rounded p-3 text-center bg-light">
+                                            <h6 class="text-muted mb-2">Remaining</h6>
+                                            <h4 class="@(Model.Budget.RemainingAmount < 0 ? "text-danger" : "text-success")">
+                                                @Model.Budget.RemainingAmount.ToString("C")
+                                            </h4>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Progress Bar -->
+                                <div class="mt-3">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <small>Progress</small>
+                                        <small>@Model.Budget.PercentageUsed.ToString("F1")%</small>
+                                    </div>
+                                    <div class="progress" style="height: 12px;">
+                                        <div class="progress-bar @(Model.Budget.PercentageUsed >= 100 ? "bg-danger" : Model.Budget.PercentageUsed >= 80 ? "bg-warning" : "bg-success")"
+                                             style="width: @(Math.Min(Model.Budget.PercentageUsed, 100))%"
+                                             role="progressbar">
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-between mt-1">
+                                        <small>0%</small>
+                                        <small>Warning: @Model.Budget.WarningThreshold%</small>
+                                        <small>100%</small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        @if (Model.Budget.CategoryId.HasValue)
+                    </div>
+                </div>
+
+                <!-- Transactions Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-receipt me-2"></i>Budget Transactions</h5>
+                            <span class="badge bg-secondary">@Model.BudgetTransactions.Count transactions</span>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        @if (Model.BudgetTransactions.Any())
                         {
-                            <div class="text-center mt-3">
-                                <a asp-page="/Transactions/Index" 
-                                   asp-route-categoryId="@Model.Budget.CategoryId.Value"
-                                   class="btn btn-outline-primary btn-sm">
-                                    View All Category Transactions
-                                </a>
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Description</th>
+                                            <th>Category</th>
+                                            <th class="text-end">Amount</th>
+                                            <th class="text-center">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var transaction in Model.BudgetTransactions)
+                                        {
+                                            <tr>
+                                                <td>@transaction.Date.ToString("MMM dd, yyyy")</td>
+                                                <td>
+                                                    <div class="fw-bold">@transaction.Description</div>
+                                                    @if (!string.IsNullOrEmpty(transaction.Notes))
+                                                    {
+                                                        <small class="text-muted">@transaction.Notes</small>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    @if (transaction.Category != null)
+                                                    {
+                                                        <span class="badge" style="background-color: @transaction.Category.Color">
+                                                            @transaction.Category.Name
+                                                        </span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-secondary">Uncategorized</span>
+                                                    }
+                                                </td>
+                                                <td class="text-end fw-bold text-danger">
+                                                    @transaction.Amount.ToString("C")
+                                                </td>
+                                                <td class="text-center">
+                                                    <a asp-page="/Transactions/Details" asp-route-id="@transaction.Id"
+                                                       class="btn btn-sm btn-outline-primary" title="View">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
                             </div>
                         }
                         else
                         {
-                            <div class="text-center mt-3">
-                                <a asp-page="/Transactions/Index" 
-                                   class="btn btn-outline-primary btn-sm">
-                                    View All Transactions
+                            <div class="text-center py-5">
+                                <i class="fas fa-receipt fa-4x text-muted mb-3"></i>
+                                <h5 class="text-muted">No transactions found</h5>
+                                <p class="text-muted">No expenses have been recorded for this budget yet.</p>
+                                <a asp-page="/Transactions/Create" class="btn btn-primary">
+                                    <i class="fas fa-plus me-2"></i>Add Transaction
                                 </a>
                             </div>
                         }
                     </div>
                 </div>
-            }
-            else
-            {
-                <div class="card shadow">
-                    <div class="card-body text-center py-5">
-                        <i class="bi bi-receipt display-4 text-muted mb-3"></i>
-                        <h5 class="text-muted">No Transactions Yet</h5>
-                        <p class="text-muted mb-3">
-                            @(Model.Budget.CategoryId.HasValue 
-                                ? $"No transactions found for this category during the budget period." 
-                                : "No expense transactions found during the budget period.")
-                        </p>
-                        <a asp-page="/Transactions/Create" class="btn btn-success">
-                            <i class="bi bi-plus-circle me-2"></i>Add Transaction
-                        </a>
+            </div>
+
+            <!-- Right Column: Budget Info & Actions -->
+            <div class="col-lg-4">
+                <!-- Budget Information Card -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Budget Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row">
+                            <dt class="col-sm-5">Name</dt>
+                            <dd class="col-sm-7">@Model.Budget.Name</dd>
+
+                            @if (!string.IsNullOrEmpty(Model.Budget.Description))
+                            {
+                                <dt class="col-sm-5">Description</dt>
+                                <dd class="col-sm-7">@Model.Budget.Description</dd>
+                            }
+
+                            <dt class="col-sm-5">Category</dt>
+                            <dd class="col-sm-7">
+                                @if (Model.Budget.Category != null)
+                                {
+                                    <span class="badge" style="background-color: @Model.Budget.Category.Color">
+                                        @Model.Budget.Category.Name
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">All Categories</span>
+                                }
+                            </dd>
+
+                            <dt class="col-sm-5">Period</dt>
+                            <dd class="col-sm-7">
+                                <span class="badge bg-info">@Model.Budget.Period</span>
+                            </dd>
+
+                            <dt class="col-sm-5">Start Date</dt>
+                            <dd class="col-sm-7">@Model.Budget.StartDate.ToString("MMM dd, yyyy")</dd>
+
+                            <dt class="col-sm-5">End Date</dt>
+                            <dd class="col-sm-7">
+                                @(Model.Budget.EndDate?.ToString("MMM dd, yyyy") ?? "Ongoing")
+                            </dd>
+
+                            @if (Model.Budget.LastResetDate.HasValue)
+                            {
+                                <dt class="col-sm-5">Last Reset</dt>
+                                <dd class="col-sm-7">@Model.Budget.LastResetDate.Value.ToString("MMM dd, yyyy")</dd>
+                            }
+
+                            @if (Model.Budget.NextResetDate.HasValue)
+                            {
+                                <dt class="col-sm-5">Next Reset</dt>
+                                <dd class="col-sm-7">@Model.Budget.NextResetDate.Value.ToString("MMM dd, yyyy")</dd>
+                            }
+
+                            <dt class="col-sm-5">Created</dt>
+                            <dd class="col-sm-7">@Model.Budget.CreatedDate.ToString("MMM dd, yyyy")</dd>
+
+                            <dt class="col-sm-5">Last Modified</dt>
+                            <dd class="col-sm-7">@Model.Budget.ModifiedDate.ToString("MMM dd, yyyy")</dd>
+                        </dl>
                     </div>
                 </div>
-            }
-        </div>
-        
-        <div class="col-lg-4">
-            <!-- Quick Stats -->
-            <div class="card shadow mb-4">
-                <div class="card-header">
-                    <h6 class="mb-0">
-                        <i class="bi bi-graph-up me-2"></i>Budget Statistics
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <ul class="list-unstyled mb-0">
-                        <li class="mb-3">
-                            <div class="d-flex justify-content-between">
-                                <span class="text-muted">Status</span>
-                                <span class="fw-bold @(Model.IsOverBudget ? "text-danger" : "text-success")">
-                                    @(Model.IsOverBudget ? "Over Budget" : "Within Budget")
-                                </span>
-                            </div>
-                        </li>
-                        <li class="mb-3">
-                            <div class="d-flex justify-content-between">
-                                <span class="text-muted">Usage</span>
-                                <span class="fw-bold">@Model.PercentageUsed.ToString("F1")%</span>
-                            </div>
-                        </li>
-                        <li class="mb-3">
-                            <div class="d-flex justify-content-between">
-                                <span class="text-muted">Days Remaining</span>
-                                <span class="fw-bold">
-                                    @if (Model.Budget.EndDate.HasValue)
-                                    {
-                                        var daysRemaining = (Model.Budget.EndDate.Value - DateTime.Now).Days;
-                                        @(daysRemaining > 0 ? daysRemaining : 0)
-                                    }
-                                    else
-                                    {
-                                        @: Ongoing
-                                    }
-                                </span>
-                            </div>
-                        </li>
-                        <li class="mb-3">
-                            <div class="d-flex justify-content-between">
-                                <span class="text-muted">Created</span>
-                                <span class="fw-bold">@Model.Budget.CreatedDate.ToString("MMM dd, yyyy")</span>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="d-flex justify-content-between">
-                                <span class="text-muted">Last Updated</span>
-                                <span class="fw-bold">@Model.Budget.ModifiedDate.ToString("MMM dd, yyyy")</span>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </div>
 
-            <!-- Quick Actions -->
-            <div class="card shadow">
-                <div class="card-header">
-                    <h6 class="mb-0">
-                        <i class="bi bi-lightning me-2"></i>Quick Actions
-                    </h6>
+                <!-- Period Stats Card -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Period Statistics</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <div class="text-center">
+                                    <h6 class="text-muted mb-1">Days Elapsed</h6>
+                                    <h4>@Model.DaysElapsed</h4>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="text-center">
+                                    <h6 class="text-muted mb-1">Days Remaining</h6>
+                                    <h4 class="@(Model.DaysRemaining <= 7 ? "text-warning" : "text-success")">
+                                        @(Model.DaysRemaining >= 0 ? Model.DaysRemaining.ToString() : "∞")
+                                    </h4>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <div class="text-center">
+                                    <h6 class="text-muted mb-1">Daily Average</h6>
+                                    <h5 class="@(Model.DailyAverage > (Model.Budget.Amount / 30) ? "text-danger" : "text-success")">
+                                        @Model.DailyAverage.ToString("C")
+                                    </h5>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="text-center">
+                                    <h6 class="text-muted mb-1">Weekly Average</h6>
+                                    <h5 class="@(Model.WeeklyAverage > (Model.Budget.Amount / 4) ? "text-danger" : "text-success")">
+                                        @Model.WeeklyAverage.ToString("C")
+                                    </h5>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (Model.PeriodEndDate.HasValue && Model.DaysRemaining > 0)
+                        {
+                            <div class="mt-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <small>Period Progress</small>
+                                    <small>@Model.DaysElapsed days / @(Model.DaysElapsed + Model.DaysRemaining) total</small>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    @{
+                                        var totalDays = Model.DaysElapsed + Model.DaysRemaining;
+                                        var progressPercentage = totalDays > 0 ? (Model.DaysElapsed * 100) / totalDays : 0;
+                                    }
+                                    <div class="progress-bar @(progressPercentage > 80 ? "bg-warning" : "bg-info")"
+                                         style="width: @progressPercentage%">
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a asp-page="/Transactions/Create"
-                           asp-route-categoryId="@(Model.Budget.CategoryId.HasValue ? Model.Budget.CategoryId.Value : null)"
-                           class="btn btn-success">
-                            <i class="bi bi-plus-circle me-2"></i>Add Transaction
-                        </a>
-                        <a asp-page="Edit" asp-route-id="@Model.Budget.Id" class="btn btn-outline-primary">
-                            <i class="bi bi-pencil me-2"></i>Edit Budget
-                        </a>
-                        <button type="button" class="btn btn-outline-danger" 
-                                onclick="confirmDelete(@Model.Budget.Id, '@Model.Budget.Name')">
-                            <i class="bi bi-trash me-2"></i>Delete Budget
-                        </button>
+
+                <!-- Notification Settings Card -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-bell me-2"></i>Notification Settings</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox"
+                                @(Model.Budget.NotifyOnExceed ? "checked" : "")
+                                       onchange="toggleNotification(this, 'exceeded')">
+                                <label class="form-check-label">
+                                    Notify when exceeded
+                                </label>
+                            </div>
+                            <small class="text-muted">Receive notifications when budget is exceeded</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox"
+                                @(Model.Budget.NotifyOnWarning ? "checked" : "")
+                                       onchange="toggleNotification(this, 'warning')">
+                                <label class="form-check-label">
+                                    Notify on warning (@Model.Budget.WarningThreshold%)
+                                </label>
+                            </div>
+                            <small class="text-muted">Receive notifications when usage reaches @Model.Budget.WarningThreshold%</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            @if (Model.IsPeriodActive && Model.Budget.NextResetDate.HasValue)
+                            {
+                                <form method="post" asp-page-handler="Reset"
+                                      onsubmit="return confirm('Reset this budget for a new period? Current spending will be archived.');">
+                                    <input type="hidden" name="id" value="@Model.Budget.Id" />
+                                    <button type="submit" class="btn btn-warning w-100">
+                                        <i class="fas fa-redo me-2"></i>Reset Budget
+                                    </button>
+                                </form>
+                            }
+
+                            <a asp-page="/Transactions/Create" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Add Transaction
+                            </a>
+
+                            <a asp-page="/Reports/Index" class="btn btn-outline-success">
+                                <i class="fas fa-chart-bar me-2"></i>View Reports
+                            </a>
+
+                            <div class="btn-group" role="group">
+                                <a asp-page="Edit" asp-route-id="@Model.Budget.Id" class="btn btn-outline-primary">
+                                    <i class="fas fa-edit me-2"></i>Edit
+                                </a>
+                                <a asp-page="Index" class="btn btn-outline-secondary">
+                                    <i class="fas fa-list me-2"></i>All Budgets
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            <!-- Tips -->
-            <div class="card shadow mt-4">
-                <div class="card-header">
-                    <h6 class="mb-0">
-                        <i class="bi bi-info-circle me-2"></i>Budget Tips
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <ul class="list-unstyled mb-0">
-                        @if (Model.IsOverBudget)
-                        {
-                            <li class="mb-2">
-                                <i class="bi bi-exclamation-triangle text-danger me-2"></i>
-                                <small>You're over budget. Consider reducing spending.</small>
-                            </li>
-                        }
-                        else if (Model.PercentageUsed >= 80)
-                        {
-                            <li class="mb-2">
-                                <i class="bi bi-exclamation-circle text-warning me-2"></i>
-                                <small>You're approaching your budget limit.</small>
-                            </li>
-                        }
-                        <li class="mb-2">
-                            <i class="bi bi-calendar-check text-primary me-2"></i>
-                            <small>Budget period: @Model.Budget.Period</small>
-                        </li>
-                        @if (Model.Budget.CategoryId.HasValue)
-                        {
-                            <li class="mb-2">
-                                <i class="bi bi-funnel text-info me-2"></i>
-                                <small>This budget tracks only @Model.Budget.Category?.Name expenses</small>
-                            </li>
-                        }
-                    </ul>
-                </div>
-            </div>
         </div>
-    </div>
-</div>
-
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Delete Budget</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to delete budget "<span id="budgetName"></span>"?</p>
-                <p class="text-danger"><small>This action cannot be undone.</small></p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form method="post" asp-page="/Budgets/Index" asp-page-handler="Delete" id="deleteForm">
-                    <input type="hidden" name="id" id="budgetId">
-                    <button type="submit" class="btn btn-danger">Delete</button>
-                </form>
-            </div>
+    }
+    else
+    {
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle me-2"></i>Budget not found.
         </div>
-    </div>
+        <a asp-page="Index" class="btn btn-primary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Budgets
+        </a>
+    }
 </div>
 
 @section Scripts {
     <script>
-        function confirmDelete(id, name) {
-            document.getElementById('budgetId').value = id;
-            document.getElementById('budgetName').textContent = name;
-            
-            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-            modal.show();
+        // Toggle notification settings
+        function toggleNotification(checkbox, type) {
+            const enableExceeded = type === 'exceeded' ? checkbox.checked : true;
+            const enableWarning = type === 'warning' ? checkbox.checked : true;
+
+            fetch(`?handler=EnableNotifications&id=@Model.Budget?.Id&enableExceeded=${enableExceeded}&enableWarning=${enableWarning}`, {
+                method: 'POST',
+                headers: {
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    const alert = document.createElement('div');
+                    alert.className = 'alert alert-success alert-dismissible fade show position-fixed top-0 end-0 m-3';
+                    alert.style.zIndex = '1060';
+                    alert.innerHTML = `
+                        <i class="fas fa-check-circle me-2"></i>Notification settings updated
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    `;
+                    document.body.appendChild(alert);
+
+                    setTimeout(() => {
+                        alert.remove();
+                    }, 3000);
+                }
+            })
+            .catch(error => {
+                console.error('Error updating notification settings:', error);
+                checkbox.checked = !checkbox.checked; // Revert change
+
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-danger alert-dismissible fade show position-fixed top-0 end-0 m-3';
+                alert.style.zIndex = '1060';
+                alert.innerHTML = `
+                    <i class="fas fa-exclamation-circle me-2"></i>Error updating settings
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.body.appendChild(alert);
+
+                setTimeout(() => {
+                    alert.remove();
+                }, 3000);
+            });
         }
+
+        // Create circular progress chart
+        document.addEventListener('DOMContentLoaded', function() {
+            const progressCircle = document.querySelector('.progress-circle');
+            if (progressCircle) {
+                const percentage = parseFloat(progressCircle.dataset.percentage);
+                const size = parseInt(progressCircle.dataset.size) || 120;
+                const color = progressCircle.dataset.color || '#28a745';
+
+                const radius = size / 2 - 10;
+                const circumference = 2 * Math.PI * radius;
+                const offset = circumference - (percentage / 100) * circumference;
+
+                const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                svg.setAttribute('width', size);
+                svg.setAttribute('height', size);
+                svg.setAttribute('class', 'progress-circle-svg');
+
+                const circleBg = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circleBg.setAttribute('cx', size / 2);
+                circleBg.setAttribute('cy', size / 2);
+                circleBg.setAttribute('r', radius);
+                circleBg.setAttribute('stroke', '#e9ecef');
+                circleBg.setAttribute('stroke-width', '10');
+                circleBg.setAttribute('fill', 'none');
+
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', size / 2);
+                circle.setAttribute('cy', size / 2);
+                circle.setAttribute('r', radius);
+                circle.setAttribute('stroke', color);
+                circle.setAttribute('stroke-width', '10');
+                circle.setAttribute('fill', 'none');
+                circle.setAttribute('stroke-dasharray', circumference);
+                circle.setAttribute('stroke-dashoffset', circumference);
+                circle.setAttribute('stroke-linecap', 'round');
+                circle.setAttribute('transform', `rotate(-90 ${size/2} ${size/2})`);
+
+                svg.appendChild(circleBg);
+                svg.appendChild(circle);
+                progressCircle.appendChild(svg);
+
+                // Animate the circle
+                setTimeout(() => {
+                    circle.style.transition = 'stroke-dashoffset 1s ease-in-out';
+                    circle.style.strokeDashoffset = offset;
+                }, 100);
+            }
+        });
+
+        // Auto-dismiss alerts
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
     </script>
+
+    <style>
+        .breadcrumb {
+            background-color: transparent;
+            padding: 0;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-circle {
+            position: relative;
+            display: inline-block;
+        }
+
+        .progress-circle-svg {
+            display: block;
+        }
+
+        .card {
+            border: none;
+            border-radius: 0.5rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+
+        .card-header {
+            border-radius: 0.5rem 0.5rem 0 0 !important;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+        }
+
+        .btn {
+            border-radius: 0.375rem;
+            font-weight: 500;
+        }
+
+        .badge {
+            font-size: 0.75em;
+            font-weight: 500;
+            padding: 0.35em 0.65em;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+
+        dl.row dt {
+            font-weight: 500;
+            padding-bottom: 0.5rem;
+        }
+
+        dl.row dd {
+            padding-bottom: 0.5rem;
+        }
+
+        .form-check-input:checked {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+
+        .form-check-input:focus {
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+
+        .progress {
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            border-radius: 1rem;
+            transition: width 0.3s ease;
+        }
+    </style>
 }
