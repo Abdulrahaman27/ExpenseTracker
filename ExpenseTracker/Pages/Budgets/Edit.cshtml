@@ -1,0 +1,143 @@
+﻿@page
+@model ExpenseTracker.Pages.Budgets.EditModel
+@{
+    ViewData["Title"] = "Edit Budget";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-pencil me-2"></i>@ViewData["Title"]
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="editForm">
+                        <input type="hidden" asp-for="Budget.Id" />
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <!-- Same form structure as Create.cshtml -->
+                        <!-- You can copy the entire form from Create.cshtml but change: -->
+                        <!-- 1. Button text to "Update Budget" -->
+                        <!-- 2. Initialize form with existing values -->
+                        <!-- Budget Name -->
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label asp-for="Budget.Name" class="form-label required"></label>
+                                <input asp-for="Budget.Name" class="form-control" />
+                                <span asp-validation-for="Budget.Name" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label asp-for="Budget.Description" class="form-label"></label>
+                                <textarea asp-for="Budget.Description" class="form-control" rows="3"></textarea>
+                                <span asp-validation-for="Budget.Description" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Amount and Period -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Budget.Amount" class="form-label required"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input asp-for="Budget.Amount" class="form-control"
+                                           type="number" step="0.01" min="0.01" />
+                                </div>
+                                <span asp-validation-for="Budget.Amount" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Budget.Period" class="form-label required"></label>
+                                <select asp-for="Budget.Period" class="form-select" id="periodSelect">
+                                    @foreach (var option in Model.PeriodOptions)
+                                    {
+                                        <option value="@option.Value">@option.Text</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="Budget.Period" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Dates -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Budget.StartDate" class="form-label required"></label>
+                                <input asp-for="Budget.StartDate" class="form-control"
+                                       type="date" id="startDate" />
+                                <span asp-validation-for="Budget.StartDate" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Budget.EndDate" class="form-label">End Date (Optional)</label>
+                                <input asp-for="Budget.EndDate" class="form-control"
+                                       type="date" id="endDate" />
+                                <span asp-validation-for="Budget.EndDate" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Category -->
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label asp-for="Budget.CategoryId" class="form-label">Category (Optional)</label>
+                                <select asp-for="Budget.CategoryId" class="form-select" id="categorySelect">
+                                    @foreach (var category in Model.Categories)
+                                    {
+                                        <option value="@category.Value">@category.Text</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="Budget.CategoryId" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-check-circle me-2"></i>Update Budget
+                                </button>
+                            </div>
+                            <div>
+                                <a asp-page="Index" class="btn btn-secondary">
+                                    <i class="bi bi-x-circle me-2"></i>Cancel
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize date inputs
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
+            const periodSelect = document.getElementById('periodSelect');
+
+            // Set minimum date to today for start date
+            const today = new Date().toISOString().split('T')[0];
+            startDateInput.min = today;
+
+            // Handle period change
+            periodSelect.addEventListener('change', function() {
+                const period = parseInt(this.value);
+                if (period === 5) { // Custom
+                    endDateInput.disabled = false;
+                } else {
+                    endDateInput.disabled = true;
+                }
+            });
+        });
+    </script>
+}
