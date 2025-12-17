@@ -58,9 +58,13 @@ namespace ExpenseTracker.Services
                 BudgetSummary = new BudgetSummary
                 {
                     TotalBudgets = budgets.Count,
-                    OverBudgetCount = budgets.Count(b => b.CurrentSpending > b.Amount),
-                    UnderBudgetCount = budgets.Count(b => b.CurrentSpending <= b.Amount),
-                    BudgetStatuses = budgets.Select(b => new BudgetStatus
+                    ActiveBudgets = budgets.Count, // Since we are getting budgets for the date range, they are active for that range.
+                    ExceededBudgets = budgets.Count(b => b.CurrentSpending > b.Amount),
+                    WarningBudgets = budgets.Count(b => b.Status == BudgetStatusType.Warning),
+                    OnTrackBudgets = budgets.Count(b => b.Status == BudgetStatusType.OnTrack),
+                    TotalBudgetedAmount = budgets.Sum(b => b.Amount),
+                    TotalCurrentSpending = budgets.Sum(b => b.CurrentSpending),
+                    BudgetStatuses = budgets.Select(b => new BudgetStatusSummary
                     {
                         BudgetName = b.Name,
                         CategoryName = b.Category?.Name,

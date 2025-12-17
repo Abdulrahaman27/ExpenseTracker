@@ -15,6 +15,7 @@ namespace ExpenseTracker.Data
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Budget> Budgets { get; set; }
+        public DbSet<BudgetNotification> BudgetNotifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -130,6 +131,21 @@ namespace ExpenseTracker.Data
                     KeywordsJson = freelanceKeywords
                 }
             );
+
+            modelBuilder.Entity<BudgetNotification>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Message).IsRequired().HasMaxLength(500);
+                entity.Property(e => e.Type).IsRequired();
+                entity.Property(e => e.CreatedDate).IsRequired();
+
+                // Relationship with Budget
+                entity.HasOne(e => e.Budget)
+                      .WithMany()
+                      .HasForeignKey(e => e.BudgetId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
         }
     }
 }

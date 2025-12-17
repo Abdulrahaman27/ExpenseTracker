@@ -115,8 +115,8 @@
                                         </small>
                                     </td>
                                     <td class="text-end fw-bold">@budget.Amount.ToString("C")</td>
-                                    <td class="text-end @(budget.IsOverBudget ? "text-danger" : "text-success")">
-                                        @budget.SpentAmount.ToString("C")
+                                    <td class="text-end @(budget.Status == BudgetStatusType.Exceeded ? "text-danger" : "text-success")">
+                                        @budget.CurrentSpending.ToString("C")
                                     </td>
                                     <td class="text-end fw-bold @(budget.RemainingAmount < 0 ? "text-danger" : "text-success")">
                                         @budget.RemainingAmount.ToString("C")

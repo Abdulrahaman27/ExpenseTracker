@@ -26,7 +26,7 @@ namespace ExpenseTracker.Pages.Budgets
             Budgets = await _budgetService.GetBudgetsAsync();
 
             TotalBudgeted = Budgets.Sum(b => b.Amount);
-            TotalSpent = Budgets.Sum(b => b.SpentAmount);
+            TotalSpent = Budgets.Sum(b => b.CurrentSpending);
         }
 
         public async Task<IActionResult> OnPostDeleteAsync(int id)

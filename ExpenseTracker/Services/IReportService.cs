@@ -52,21 +52,7 @@ namespace ExpenseTracker.Services
         public decimal AverageTransactionAmount { get; set; }
     }
 
-    public class BudgetSummary
-    {
-        public int TotalBudgets { get; set; }
-        public int OverBudgetCount { get; set; }
-        public int UnderBudgetCount { get; set; }
-        public List<BudgetStatus> BudgetStatuses { get; set; }
-    }
 
-    public class BudgetStatus
-    {
-        public string BudgetName { get; set; }
-        public string CategoryName { get; set; }
-        public decimal BudgetAmount { get; set; }
-        public decimal ActualSpending { get; set; }
-        public decimal Difference => BudgetAmount - ActualSpending;
-        public bool IsOverBudget => ActualSpending > BudgetAmount;
-    }
+
+
 }
